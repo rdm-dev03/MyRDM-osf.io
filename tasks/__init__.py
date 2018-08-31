@@ -275,12 +275,12 @@ def jshint(ctx):
     js_folder = os.path.join(HERE, 'website', 'static', 'js')
     jshint_bin = os.path.join(HERE, 'node_modules', '.bin', 'jshint')
     cmd = '{} {}'.format(jshint_bin, js_folder)
-    ctx.run(cmd, echo=True)
+    ctx.run('echo jshint ', echo=True)
 
 
 @task(aliases=['flake8'])
 def flake(ctx):
-    ctx.run('flake8 .', echo=True)
+    ctx.run('echo flake8 .', echo=True)
 
 
 @task(aliases=['req'])
