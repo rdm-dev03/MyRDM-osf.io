@@ -37,7 +37,7 @@ class TestInstitutionListView(AdminTestCase):
         super(TestInstitutionListView, self).tearDown()
         self.user.delete()
         for institution in self.institutions:
-            institution.remove()
+            institution.delete()
 
     def test_super_admin_login(self, *args, **kwargs):
         """統合管理者のログインテスト"""
@@ -98,8 +98,8 @@ class TestAddonListView(AdminTestCase):
         super(TestAddonListView, self).tearDown()
         self.user.affiliated_institutions.remove(self.institution1)
         self.user.delete()
-        self.institution1.remove()
-        self.institution2.remove()
+        self.institution1.delete()
+        self.institution2.delete()
 
     def test_super_admin_login(self):
         """統合管理者のログインテスト"""
@@ -203,11 +203,11 @@ class TestAddonAllowView(AdminTestCase):
         if self.user.external_accounts.filter(pk=self.external_account.id).exists():
             self.user.external_accounts.remove(self.external_account)
         self.user.delete()
-        self.institution1.remove()
+        self.institution1.delete()
         self.rdm_addon_option.external_accounts.remove(self.external_account)
-        self.rdm_addon_option.remove()
-        institution.remove()
-        self.external_account.remove()
+        self.rdm_addon_option.delete()
+        institution.delete()
+        self.external_account.delete()
 
     def test_super_admin_login(self):
         """統合管理者のログインテスト"""
@@ -287,8 +287,8 @@ class TestNoInstitutionAddonAllowView(AdminTestCase):
             self.user.external_accounts.remove(self.external_account)
         self.user.delete()
         self.rdm_addon_option.external_accounts.remove(self.external_account)
-        self.rdm_addon_option.remove()
-        self.external_account.remove()
+        self.rdm_addon_option.delete()
+        self.external_account.delete()
 
     def test_super_admin_login(self):
         """統合管理者のログインテスト"""
@@ -342,9 +342,9 @@ class TestAddonForceView(AdminTestCase):
             self.user.external_accounts.remove(self.external_account)
         self.user.delete()
         self.rdm_addon_option.external_accounts.remove(self.external_account)
-        self.rdm_addon_option.remove()
-        institution.remove()
-        self.external_account.remove()
+        self.rdm_addon_option.delete()
+        institution.delete()
+        self.external_account.delete()
 
     def test_super_admin_login(self):
         """統合管理者のログインテスト"""
@@ -423,8 +423,8 @@ class TestNoInstitutionAddonForceView(AdminTestCase):
             self.user.external_accounts.remove(self.external_account)
         self.user.delete()
         self.rdm_addon_option.external_accounts.remove(self.external_account)
-        self.rdm_addon_option.remove()
-        self.external_account.remove()
+        self.rdm_addon_option.delete()
+        self.external_account.delete()
 
     def test_get(self, *args, **kwargs):
         #res = self.view.get(self.request, *args, **self.view.kwargs)

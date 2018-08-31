@@ -39,7 +39,7 @@ class TestInstitutionListViewStat(AdminTestCase):
         self.user.affiliated_institutions.remove(self.institution1)
         self.user.delete()
         for institution in self.institutions:
-            institution.remove()
+            institution.delete()
 
     def test_super_admin_login(self, *args, **kwargs):
         """統合管理者のログインテスト"""
@@ -116,7 +116,7 @@ class TestclassStatisticsView(AdminTestCase):
         super(TestclassStatisticsView, self).tearDown()
         self.user.affiliated_institutions.remove(self.institution1)
         self.user.delete()
-        self.institution1.remove()
+        self.institution1.delete()
 
     def test_super_admin_login(self):
         """統合管理者のログインテスト"""
@@ -197,8 +197,8 @@ class TestImageView(AdminTestCase):
         super(TestImageView, self).tearDown()
         self.user.affiliated_institutions.remove(self.institution1)
         self.user.delete()
-        self.institution1.remove()
-        self.rdm_statistics.remove()
+        self.institution1.delete()
+        self.rdm_statistics.delete()
 
     def test_super_admin_login(self):
         """統合管理者のログインテスト"""
@@ -272,7 +272,7 @@ class TestSendView(AdminTestCase):
         super(TestSendView, self).tearDown()
         self.user.affiliated_institutions.remove(self.institution1)
         self.user.delete()
-        self.institution1.remove()
+        self.institution1.delete()
 
     def test_super_admin_login(self):
         """統合管理者のログインテスト"""
@@ -351,7 +351,7 @@ class TestCreateCSV(AdminTestCase):
         super(TestCreateCSV, self).tearDown()
         self.user.affiliated_institutions.remove(self.institution1)
         self.user.delete()
-        self.institution1.remove()
+        self.institution1.delete()
 
 
 # class TestGatherView(AdminTestCase):

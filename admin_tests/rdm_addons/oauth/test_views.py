@@ -138,9 +138,6 @@ class TestCallbackView(AdminTestCase):
             'institution_id': self.institution.id,
         }
 
-        #args = []
-        #res0 = self.view0.get(self.request, *args, **self.view0.kwargs)
-
     def tearDown(self):
         super(TestCallbackView, self).tearDown()
         self.user.affiliated_institutions.remove(self.institution)

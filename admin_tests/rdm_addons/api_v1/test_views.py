@@ -57,9 +57,9 @@ class TestOAuthView(AdminTestCase):
         self.user.delete()
         if self.rdm_addon_option.external_accounts.filter(pk=self.external_account.id).exists():
             self.rdm_addon_option.external_accounts.remove(self.external_account)
-        self.rdm_addon_option.remove()
-        institution.remove()
-        self.external_account.remove()
+        self.rdm_addon_option.delete()
+        institution.delete()
+        self.external_account.delete()
 
     def test_super_admin_login(self):
         """統合管理者のログインテスト"""
@@ -222,9 +222,9 @@ class TestAccountsView(AdminTestCase):
         self.user.delete()
         if self.rdm_addon_option.external_accounts.filter(pk=self.external_account.id).exists():
             self.rdm_addon_option.external_accounts.remove(self.external_account)
-        self.rdm_addon_option.remove()
-        institution.remove()
-        self.external_account.remove()
+        self.rdm_addon_option.delete()
+        institution.delete()
+        self.external_account.delete()
 
     def test_super_admin_login(self):
         """統合管理者のログインテスト"""
