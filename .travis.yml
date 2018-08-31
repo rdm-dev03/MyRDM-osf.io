@@ -143,7 +143,7 @@ install:
     - travis_retry invoke assets --dev
 # timestamp Key assign
     - mkdir -p ./user_key_info
-    - cp root_cert_verifycate.pem /user_key_info
+    - cp root_cert_verifycate.pem ./user_key_info
 
 # Run Python tests (core and addon) and JS tests
 script:
