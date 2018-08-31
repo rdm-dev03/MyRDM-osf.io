@@ -106,7 +106,6 @@ class TestOAuthView(AdminTestCase):
         nt.assert_equal(self.rdm_addon_option.external_accounts.count(), 0)
 
 
-'''
     def test_delete_dummy(self, *args, **kwargs):
         self.view.kwargs['external_account_id'] = self.external_account._id + 'dummy'
         with self.assertRaises(Http404):
@@ -118,7 +117,6 @@ class TestOAuthView(AdminTestCase):
         with self.assertRaises(Http404):
             res = self.view.delete(self.request, *args, **self.view.kwargs)
 
-'''
 class TestSettingsView(AdminTestCase):
     def setUp(self):
         super(TestSettingsView, self).setUp()
@@ -136,9 +134,9 @@ class TestSettingsView(AdminTestCase):
 
     def tearDown(self):
         super(TestSettingsView, self).tearDown()
-        self.user.affiliated_institutions.remove()
+        self.user.affiliated_institutions.delete()
         self.user.delete()
-        self.institution.remove()
+        self.institution.delete()
 
     def test_super_admin_login(self):
         """統合管理者のログインテスト"""
