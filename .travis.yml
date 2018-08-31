@@ -141,6 +141,7 @@ install:
     - pip uninstall uritemplate.py --yes
     - pip install uritemplate.py==0.3.0
     - travis_retry invoke assets --dev
+    - mkdir ./user_key_info
 
 # Run Python tests (core and addon) and JS tests
 script:
