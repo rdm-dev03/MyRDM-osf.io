@@ -88,7 +88,10 @@ class CallbackView(RdmPermissionMixin, RdmAddonRequestContextMixin, UserPassesTe
         """権限等のチェック"""
         addon_name = self.kwargs.get('addon_name')
         session = self.get_session(addon_name)
-        institution_id = int(session.data['oauth_states'][addon_name]['institution_id'])
+        if 'oauth_states' in session.data:
+            institution_id = int(session.data['oauth_states'][addon_name]['institution_id'])
+        else:
+            institution_id = None
         #print 'institution id', institution_id
         return self.has_auth(institution_id)
 
