@@ -35,7 +35,7 @@ class TestInstitutionListView(AdminTestCase):
 
     def tearDown(self):
         super(TestInstitutionListView, self).tearDown()
-        self.user.remove()
+        self.user.delete()
         for institution in self.institutions:
             institution.remove()
 
@@ -97,7 +97,7 @@ class TestAddonListView(AdminTestCase):
     def tearDown(self):
         super(TestAddonListView, self).tearDown()
         self.user.affiliated_institutions.remove(self.institution1)
-        self.user.remove()
+        self.user.delete()
         self.institution1.remove()
         self.institution2.remove()
 
@@ -155,7 +155,7 @@ class TestIconView(AdminTestCase):
 
     def tearDown(self):
         super(TestIconView, self).tearDown()
-        self.user.remove()
+        self.user.delete()
 
     def test_login_user(self):
         nt.assert_true(self.view.test_func())
@@ -202,7 +202,7 @@ class TestAddonAllowView(AdminTestCase):
         self.user.affiliated_institutions.remove(institution)
         if self.user.external_accounts.filter(pk=self.external_account.id).exists():
             self.user.external_accounts.remove(self.external_account)
-        self.user.remove()
+        self.user.delete()
         self.institution1.remove()
         self.rdm_addon_option.external_accounts.remove(self.external_account)
         self.rdm_addon_option.remove()
@@ -285,7 +285,7 @@ class TestNoInstitutionAddonAllowView(AdminTestCase):
         super(TestNoInstitutionAddonAllowView, self).tearDown()
         if self.user.external_accounts.filter(pk=self.external_account.id).exists():
             self.user.external_accounts.remove(self.external_account)
-        self.user.remove()
+        self.user.delete()
         self.rdm_addon_option.external_accounts.remove(self.external_account)
         self.rdm_addon_option.remove()
         self.external_account.remove()
@@ -340,7 +340,7 @@ class TestAddonForceView(AdminTestCase):
         self.user.affiliated_institutions.remove(institution)
         if self.user.external_accounts.filter(pk=self.external_account.id).exists():
             self.user.external_accounts.remove(self.external_account)
-        self.user.remove()
+        self.user.delete()
         self.rdm_addon_option.external_accounts.remove(self.external_account)
         self.rdm_addon_option.remove()
         institution.remove()
@@ -421,7 +421,7 @@ class TestNoInstitutionAddonForceView(AdminTestCase):
         super(TestNoInstitutionAddonForceView, self).tearDown()
         if self.user.external_accounts.filter(pk=self.external_account.id).exists():
             self.user.external_accounts.remove(self.external_account)
-        self.user.remove()
+        self.user.delete()
         self.rdm_addon_option.external_accounts.remove(self.external_account)
         self.rdm_addon_option.remove()
         self.external_account.remove()

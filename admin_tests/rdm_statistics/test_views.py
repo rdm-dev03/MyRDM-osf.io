@@ -37,7 +37,7 @@ class TestInstitutionListViewStat(AdminTestCase):
     def tearDown(self):
         super(TestInstitutionListViewStat, self).tearDown()
         self.user.affiliated_institutions.remove(self.institution1)
-        self.user.remove()
+        self.user.delete()
         for institution in self.institutions:
             institution.remove()
 
@@ -115,7 +115,7 @@ class TestclassStatisticsView(AdminTestCase):
     def tearDown(self):
         super(TestclassStatisticsView, self).tearDown()
         self.user.affiliated_institutions.remove(self.institution1)
-        self.user.remove()
+        self.user.delete()
         self.institution1.remove()
 
     def test_super_admin_login(self):
@@ -196,7 +196,7 @@ class TestImageView(AdminTestCase):
     def tearDown(self):
         super(TestImageView, self).tearDown()
         self.user.affiliated_institutions.remove(self.institution1)
-        self.user.remove()
+        self.user.delete()
         self.institution1.remove()
         self.rdm_statistics.remove()
 
@@ -271,7 +271,7 @@ class TestSendView(AdminTestCase):
     def tearDown(self):
         super(TestSendView, self).tearDown()
         self.user.affiliated_institutions.remove(self.institution1)
-        self.user.remove()
+        self.user.delete()
         self.institution1.remove()
 
     def test_super_admin_login(self):
@@ -350,7 +350,7 @@ class TestCreateCSV(AdminTestCase):
     def tearDown(self):
         super(TestCreateCSV, self).tearDown()
         self.user.affiliated_institutions.remove(self.institution1)
-        self.user.remove()
+        self.user.delete()
         self.institution1.remove()
 
 

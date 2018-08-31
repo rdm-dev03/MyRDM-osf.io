@@ -148,7 +148,8 @@ install:
 # Run Python tests (core and addon) and JS tests
 script:
 #    - invoke test_travis_$TEST_BUILD -n 4
-     - invoke test_module -m ./tests/test_addons.py::TestAddonLogs::test_add_log_timestamptoken 
+    - invoke test_module -m ./tests/test_addons.py::TestAddonLogs::test_add_log_timestamptoken 
+    - invoke test_module -m ./admin_tests/rdm_addons/api_v1/test_views.py::TestOAuthView::test_admin_login
 
 before_cache:
   - rm -Rf $HOME/.cache/pip/http
