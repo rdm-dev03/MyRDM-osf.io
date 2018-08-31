@@ -105,18 +105,6 @@ class TestOAuthView(AdminTestCase):
         nt.assert_equal(self.user.external_accounts.count(), 0)
         nt.assert_equal(self.rdm_addon_option.external_accounts.count(), 0)
 
-
-    def test_delete_dummy(self, *args, **kwargs):
-        self.view.kwargs['external_account_id'] = self.external_account._id + 'dummy'
-        with self.assertRaises(Http404):
-            res = self.view.delete(self.request, *args, **self.view.kwargs)
-        self.view.kwargs['external_account_id'] = self.external_account._id
-
-    def test_delete_empty(self, *args, **kwargs):
-        self.rdm_addon_option.external_accounts.remove(self.external_account)
-        with self.assertRaises(Http404):
-            res = self.view.delete(self.request, *args, **self.view.kwargs)
-
 class TestSettingsView(AdminTestCase):
     def setUp(self):
         super(TestSettingsView, self).setUp()
