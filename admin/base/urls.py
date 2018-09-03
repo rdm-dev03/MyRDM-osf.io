@@ -32,7 +32,7 @@ urlpatterns = [
             url(r'^desk/', include('admin.desk.urls',
                                    namespace='desk')),
             url(r'^announcement/', include('admin.rdm_announcement.urls', namespace='announcement')),
-            url(r'^addons/', include('admin.rdm_addons.urls', namespace='addons')),
+#            url(r'^addons/', include('admin.rdm_addons.urls', namespace='addons')),
             url(r'^oauth/', include('admin.rdm_addons.oauth.urls', namespace='oauth')),
             url(r'^statistics/', include('admin.rdm_statistics.urls', namespace='statistics')),
             url(r'^timestampadd/', include('admin.rdm_timestampadd.urls', namespace='timestampadd')),
