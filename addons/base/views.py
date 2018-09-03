@@ -938,7 +938,7 @@ def timestamptoken_verify(auth, node, file_node, version, guid):
     result = verifyCheck.timestamp_check(ret['user']['id'], file_node._id, node._id,
                                          file_node.provider, file_node._path,
                                          tmp_file, tmp_dir)
-    if tmp_dir:
+    if os.path.exists(tmp_dir):
         shutil.rmtree(tmp_dir)
 
     return result
