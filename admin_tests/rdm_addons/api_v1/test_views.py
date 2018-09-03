@@ -122,7 +122,7 @@ class TestSettingsView(AdminTestCase):
 
     def tearDown(self):
         super(TestSettingsView, self).tearDown()
-        self.user.affiliated_institutions.delete()
+        self.user.affiliated_institutions.remove()
         self.user.delete()
         self.institution.delete()
 
