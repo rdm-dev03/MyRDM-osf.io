@@ -90,6 +90,8 @@ class CallbackView(RdmPermissionMixin, RdmAddonRequestContextMixin, UserPassesTe
         session = self.get_session(addon_name)
         if 'oauth_states' in session.data:
             institution_id = int(session.data['oauth_states'][addon_name]['institution_id'])
+        elif 'institution_id' in  self.kwargs:
+            institution_id = int(self.kwargs.get('institution_id'))
         else:
             institution_id = None
         #print 'institution id', institution_id
