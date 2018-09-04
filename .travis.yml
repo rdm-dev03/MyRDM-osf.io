@@ -123,8 +123,8 @@ install:
     # WaterButler
 　　- docker pull quay.io/centerforopenscience/wb:develop
   　- docker run -p 7777:7777 -d quay.io/centerforopenscience/wb:develop
-    # osf applications
-    - cd $PROJECT_DIR
+
+- cd $PROJECT_DIR
     - cp website/settings/local-travis.py website/settings/local.py
     - cp api/base/settings/local-travis.py api/base/settings/local.py
     - '[ -d $HOME/preprints ] || ( mkdir -p $HOME/preprints && touch $HOME/preprints/index.html )'
