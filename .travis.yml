@@ -45,9 +45,6 @@ before_install:
 
 # cache directories
     - |
-#    # WaterButler
-　　  docker pull quay.io/centerforopenscience/wb:develop
-  　  docker run -p 7777:7777 -d quay.io/centerforopenscience/wb:develop
       mkdir -p $HOME/.cache/downloads
       mkdir -p $HOME/.cache/pip
       mkdir -p $HOME/.cache/wheelhouse
