@@ -106,9 +106,7 @@ before_install:
       chmod +x docker-compose
       sudo mv docker-compose /usr/local/bin
       docker-compose --version
-
-#      sudo mv docker-compose /usr/local/bin
-      difp docker-compose up -d wb
+      docker-compose up -d wb
 #      sudo docker pull quay.io/centerforopenscience/wb:develop
 #  　  docker run -p 7777:7777 -d quay.io/centerforopenscience/wb:develop
 
