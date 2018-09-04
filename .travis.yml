@@ -99,9 +99,8 @@ before_install:
       #    # WaterButler
     - |-
       docker info
-      mkdir wb
+      git clone https://github.com/RCOSDP/RDM-waterbutler.git wb
       cd wb
-      git clone https://github.com/RCOSDP/RDM-waterbutler.git
       docker build -t wb/test .
       docker images
 #      docker-compose up -d wb
