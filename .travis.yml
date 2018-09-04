@@ -105,7 +105,7 @@ before_install:
       docker build -t wb .
 #      docker-compose up -d wb
 #      sudo docker pull quay.io/centerforopenscience/wb:develop
-  　  docker run -p 7777:7777 -d wb:latest
+#  　  docker run -p 7777:7777 -d wb:latest
 
 
     # varnish
