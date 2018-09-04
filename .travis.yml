@@ -120,6 +120,10 @@ before_install:
     #     /tmp/varnish/usr/sbin/varnishd -n /tmp -p feature=+esi_disable_xml_check -p vmod_dir=/tmp/varnish/usr/lib/varnish/vmods -F -f $PROJECT_DIR/tests/test_files/varnish.vcl -a *:8080 > /dev/null & export VARNISH_PID=$!
     #   fi
 install:
+    # WaterButler
+　　- docker pull quay.io/centerforopenscience/wb:develop
+  　- docker run -p 7777:7777 -d quay.io/centerforopenscience/wb:develop
+    # osf applications
     - cd $PROJECT_DIR
     - cp website/settings/local-travis.py website/settings/local.py
     - cp api/base/settings/local-travis.py api/base/settings/local.py
@@ -141,15 +145,14 @@ install:
     - pip uninstall uritemplate.py --yes
     - pip install uritemplate.py==0.3.0
     - travis_retry invoke assets --dev
-# timestamp Key assign
+    # timestamp Key assign
     - mkdir -p ./user_key_info
     - cp root_cert_verifycate.pem ./user_key_info
+    
 
 # Run Python tests (core and addon) and JS tests
 script:
     - invoke test_travis_$TEST_BUILD -n 4
-#    - invoke test_module -m ./tests/test_addons.py::TestAddonLogs::test_add_log_timestamptoken 
-#    - invoke test_module -m ./admin_tests/rdm_addons/api_v1/test_views.py::TestOAuthView::test_admin_login
 
 before_cache:
   - rm -Rf $HOME/.cache/pip/http
