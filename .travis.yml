@@ -100,11 +100,12 @@ before_install:
     - |-
       sudo apt-get update
       sudo apt-get -y -q -o Dpkg::Options::="--force-confnew" install docker-ce
+      docker-compose --version
 #      curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
 #      chmod +x docker-compose
 #      sudo mv docker-compose /usr/local/bin
 #      docker-compose up -d wb
-      sudo docker pull quay.io/centerforopenscience/wb:develop
+#      sudo docker pull quay.io/centerforopenscience/wb:develop
 #  　  docker run -p 7777:7777 -d quay.io/centerforopenscience/wb:develop
 
 
