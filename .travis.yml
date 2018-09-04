@@ -105,7 +105,7 @@ before_install:
       docker images
 #      docker-compose up -d wb
 #      sudo docker pull quay.io/centerforopenscience/wb:develop
-  　  docker run -d -p 127.0.0.0.1:7777:7777 wb/test -c "invoke install --develop;python -m compileall /usr/local/lib/python3.5 || true);rm -Rf /python3.5/*;cp -Rf -p /usr/local/lib/python3.5 /"
+     docker run -d -p 127.0.0.1:7777:7777 wb/test /bin/sh -c "invoke install --develop;python -m compileall /usr/local/lib/python3.5 || true);rm -Rf /python3.5/*;cp -Rf -p /usr/local/lib/python3.5 /;"
 
 
     # varnish
