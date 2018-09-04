@@ -99,13 +99,13 @@ before_install:
       #    # WaterButler
     - |-
       docker info
-#      mkdir wb
-#      cd wb
-#      git clone https://github.com/RCOSDP/RDM-waterbutler.git
-#      git build -t wb .
+      mkdir wb
+      cd wb
+      git clone https://github.com/RCOSDP/RDM-waterbutler.git
+      docker build -t wb .
 #      docker-compose up -d wb
 #      sudo docker pull quay.io/centerforopenscience/wb:develop
-#  　  docker run -p 7777:7777 -d wb:latest
+  　  docker run -p 7777:7777 -d wb:latest
 
 
     # varnish
