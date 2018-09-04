@@ -1,9 +1,6 @@
 # Config file for automatic testing at travis-ci.org
-sudo: required
+sudo: false
 
-services:
-  - docker
-  
 language: python
 
 python:
@@ -43,9 +40,9 @@ env:
     # - TEST_BUILD="varnish"
 
 before_install:
-    # WaterButler
-　　- docker pull quay.io/centerforopenscience/wb:develop
-  　- docker run -p 7777:7777 -d quay.io/centerforopenscience/wb:develop
+#    # WaterButler
+#　　- docker pull quay.io/centerforopenscience/wb:develop
+#  　- docker run -p 7777:7777 -d quay.io/centerforopenscience/wb:develop
 
 # cache directories
     - |
