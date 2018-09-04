@@ -96,6 +96,11 @@ before_install:
               break
           fi
       done
+      #    # WaterButler
+    - |-
+　　  docker pull quay.io/centerforopenscience/wb:develop
+  　  docker run -p 7777:7777 -d quay.io/centerforopenscience/wb:develop
+
 
     # varnish
     # - |
