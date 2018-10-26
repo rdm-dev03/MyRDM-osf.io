@@ -60,6 +60,7 @@ def retry_assertion(interval=0.3, retries=3):
     def test_wrapper(func):
         t_interval = interval
         t_retries = retries
+
         @functools.wraps(func)
         def wrapped(*args, **kwargs):
             try:
@@ -93,7 +94,7 @@ class TestCollectionsSearch(OsfTestCase):
         self.reg_provider = factories.RegistrationProviderFactory()
         self.collection_one = factories.CollectionFactory(creator=self.user, is_public=True, provider=self.provider)
         self.collection_public = factories.CollectionFactory(creator=self.user, is_public=True, provider=self.provider)
-        self.collection_private = factories.CollectionFactory(creator=self.user, is_public = False, provider=self.provider)
+        self.collection_private = factories.CollectionFactory(creator=self.user, is_public=False, provider=self.provider)
         self.reg_collection = factories.CollectionFactory(creator=self.user, provider=self.reg_provider, is_public=True)
         self.reg_collection_private = factories.CollectionFactory(creator=self.user, provider=self.reg_provider, is_public=False)
 
@@ -358,7 +359,6 @@ class TestUserUpdate(OsfTestCase):
 
         docs = query_user(institution)['results']
         assert_equal(len(docs), 1)
-
 
     def test_name_fields(self):
         names = ['Bill Nye', 'William', 'the science guy', 'Sanford', 'the Great']
@@ -777,7 +777,6 @@ class TestAddContributor(OsfTestCase):
         contribs = search.search_contributor(unreg.fullname)
         assert_equal(len(contribs['users']), 0)
 
-
     def test_unreg_users_do_show_on_projects(self):
         with run_celery_tasks():
             unreg = factories.UnregUserFactory(fullname='Robert Paulson')
@@ -788,7 +787,6 @@ class TestAddContributor(OsfTestCase):
             )
         results = query(unreg.fullname)['results']
         assert_equal(len(results), 1)
-
 
     def test_search_fullname(self):
         # Searching for full name yields exactly one result.
@@ -864,7 +862,6 @@ class TestProjectSearchResults(OsfTestCase):
         with run_celery_tasks():
             super(TestProjectSearchResults, self).setUp()
             self.user = factories.UserFactory(fullname='Doug Bogie')
-
 
             self.project_singular = factories.ProjectFactory(
                 title=self.singular,
@@ -1217,7 +1214,6 @@ class TestSearchFiles(OsfTestCase):
         file_.save()
         find = query_file('Timber.mp3')['results']
         assert_equal(find[0]['guid_url'], '/' + file_guid._id + '/')
-
 
     def test_file_download_url_no_guid(self):
         file_ = self.root.append_file('Timber.mp3')

@@ -22,14 +22,14 @@ from osf_tests.factories import (
 
 
 def prepare_mock_wb_response(
-        node=None,
-        provider='github',
-        files=None,
-        folder=True,
-        path='/',
-        method=responses.GET,
-        status_code=200
-    ):
+    node=None,
+    provider='github',
+    files=None,
+    folder=True,
+    path='/',
+    method=responses.GET,
+    status_code=200
+):
     """Prepare a mock Waterbutler response with responses library.
 
     :param Node node: Target node.
@@ -419,7 +419,7 @@ class TestNodeFilesList(ApiTestCase):
             responses.Response(
                 responses.GET,
                 wb_url,
-                json={'bad' : 'json'},
+                json={'bad': 'json'},
                 status=418
             )
         )

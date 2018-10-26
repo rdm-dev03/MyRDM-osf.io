@@ -3,7 +3,6 @@
 import requests
 import os
 from api.base.utils import waterbutler_api_url_for
-sc_
 
 def upload_folder_recursive(osf_cookie, pid, local_path, dest_path):
     '''

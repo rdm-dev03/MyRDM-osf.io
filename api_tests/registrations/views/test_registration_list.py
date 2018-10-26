@@ -101,7 +101,7 @@ class TestRegistrationList(ApiTestCase):
         )
         assert_equal(
             res.json['data']['embeds']['contributors']['links']['meta']['total_bibliographic'],
-        2)
+            2)
 
     def test_exclude_nodes_from_registrations_endpoint(self):
         res = self.app.get(self.url, auth=self.user.auth)

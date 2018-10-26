@@ -567,7 +567,7 @@ class VersionedDateTimeField(DbTestCase):
         setattr(self.node, 'last_logged', self.old_date)
         data = NodeSerializer(self.node, context={'request': req}).data['data']
         assert_equal(
-            datetime.strftime(self.old_date,self.old_format),
+            datetime.strftime(self.old_date, self.old_format),
             data['attributes']['date_modified']
         )
 
@@ -588,7 +588,7 @@ class VersionedDateTimeField(DbTestCase):
         setattr(self.node, 'last_logged', self.old_date)
         data = NodeSerializer(self.node, context={'request': req}).data['data']
         assert_equal(
-            datetime.strftime(self.old_date,self.new_format),
+            datetime.strftime(self.old_date, self.new_format),
             data['attributes']['date_modified']
         )
 
