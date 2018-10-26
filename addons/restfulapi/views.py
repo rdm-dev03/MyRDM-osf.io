@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import requests
-import logging
-import json
 import time
 import os
 import shutil
 import subprocess
 from celery.result import AsyncResult
+from celery.exceptions import SoftTimeLimitExceeded
 from framework.celery_tasks import app as celery_app
 from framework.sessions import session
 from flask import request
-from api.base.utils import waterbutler_api_url_for
+from website.util import waterbutler
 from website.project.decorators import (
     must_be_contributor_or_public,
     must_have_addon,
@@ -37,7 +36,6 @@ def restfulapi_download(auth, **kwargs):
 
     # Clean up input
     data['url'] = data['url'].strip().split(' ')[0]
-
     postvalidation_result = postvalidate_data(data)
     if not postvalidation_result['valid']:
         return {
@@ -50,9 +48,27 @@ def restfulapi_download(auth, **kwargs):
     if u'task_list' not in session.data[u'restfulapi']:
         session.data[u'restfulapi'][u'task_list'] = []
 
+    # Clear finished tasks
+    for task_id in session.data[u'restfulapi'][u'task_list']:
+        task = AsyncResult(task_id)
+        if task.ready():
+            session.data[u'restfulapi'][u'task_list'].remove(task_id)
+
     task = main_task.delay(request.cookies.get('osf'), uid, data)
     session.data[u'restfulapi'][u'task_list'].append(task.task_id)
     session.save()
+
+    # Recent activity log
+    node = kwargs.get('node')
+    pid = kwargs.get('pid')
+    node.add_log(
+        action='restfulapi_submit',
+        params={
+            'node': pid,
+            'project': pid
+        },
+        auth=auth
+    )
 
     return {
         'status': 'OK',
@@ -63,6 +79,40 @@ def restfulapi_download(auth, **kwargs):
 @must_have_addon('restfulapi', 'node')
 @must_not_be_retracted_registration
 def restfulapi_cancel(auth, **kwargs):
+    if u'restfulapi' not in session.data:
+        session.data[u'restfulapi'] = {}
+    if u'task_list' not in session.data[u'restfulapi']:
+        session.data[u'restfulapi'][u'task_list'] = []
+
+    cancel_count = 0
+    for task_id in session.data[u'restfulapi'][u'task_list']:
+        task = AsyncResult(task_id)
+        if not task.ready():
+            # Raise SoftTimeLimitExceeded exception on the task
+            task.revoke(terminate=True, signal='SIGUSR1')
+            cancel_count += 1
+
+    session.data[u'restfulapi'][u'task_list'] = []
+    session.save()
+
+    if cancel_count == 0:
+        return {
+            'status': 'No download tasks',
+            'message': 'There are no active download tasks.'
+        }
+
+    # Recent activity log
+    node = kwargs.get('node')
+    pid = kwargs.get('pid')
+    node.add_log(
+        action='restfulapi_cancel',
+        params={
+            'node': pid,
+            'project': pid
+        },
+        auth=auth
+    )
+
     return {
         'status': 'OK',
         'message': 'Download task has been cancelled.'
@@ -116,21 +166,40 @@ def main_task(osf_cookie, uid, data):
     downloads from it, uploads to the selected storage and deletes the temporary
     files.
     '''
-    tmp_path = create_tmp_folder(uid)
-    if not tmp_path:
-        raise OSError('Could not create temporary folder.')
+    try:
+        tmp_path = create_tmp_folder(uid)
+        if not tmp_path:
+            raise OSError('Could not create temporary folder.')
 
-    downloaded = get_files(tmp_path, data)
-    if not downloaded:
-        raise RuntimeError('wget command returned a non-success code.')
+        download_process = get_files(tmp_path, data)
+        download_process.communicate()  # Wait for the process to finish
+        if download_process.poll() != 0:  # Checks the return_code
+            raise RuntimeError('wget command returned a non-success code.')
 
-    dest_path = 'osfstorage/' if 'folderId' not in data else data['folderId']
-    uploaded = upload_folder_content(osf_cookie, data['pid'], tmp_path, dest_path)
-    shutil.rmtree(tmp_path)
-    if not uploaded:
-        raise RuntimeError('wget command returned a non-success code.')
+        dest_path = 'osfstorage/' if 'folderId' not in data else data['folderId']
+        uploaded = waterbutler.upload_folder_recursive(osf_cookie, data['pid'], tmp_path, dest_path)
+        shutil.rmtree(tmp_path)
+        if not uploaded:
+            raise RuntimeError('Failed to upload the file(s) to the storage.')
 
-    return True
+        return True
+    except SoftTimeLimitExceeded:
+        download_process = download_process if 'download_process' in locals() else None
+        tmp_path = tmp_path if 'tmp_path' in locals() else None
+        fail_cleanup(download_process, tmp_path)
+    except Exception:
+        download_process = download_process if 'download_process' in locals() else None
+        tmp_path = tmp_path if 'tmp_path' in locals() else None
+        fail_cleanup(download_process, tmp_path)
+        raise
+
+def fail_cleanup(download_process, tmp_path):
+        # If download haven't finished, cancel it
+        if download_process and download_process.poll() is None:
+            download_process.kill()
+        # Remove temporary files
+        if tmp_path and os.path.isdir(tmp_path):
+            shutil.rmtree(tmp_path)
 
 def create_tmp_folder(uid):
     '''
@@ -149,7 +218,7 @@ def create_tmp_folder(uid):
             folder_name = '%s_%s_%s' % (uid, int(time.time()), count)
         full_path = 'tmp/restfulapi/' + folder_name
         os.mkdir(full_path)
-    except Exception:
+    except OSError:
         full_path = None
     return full_path
 
@@ -163,62 +232,63 @@ def get_files(tmp_path, data):
     if data['interval']:
         command += ['-w', data['intervalValue']]
     command.append(data['url'])
-    return_value = subprocess.call(command)
-    return return_value == 0
-
-@celery_app.task
-def upload_folder_content(osf_cookie, pid, path, dest_path):
-    '''
-    Upload all the content (files and folders) inside a folder.
-    '''
-    content_list = os.listdir(path)
-
-    for item_name in content_list:
-        full_path = os.path.join(path, item_name)
-        if os.path.isdir(full_path):  # Create directory
-            folder = create_folder(osf_cookie, pid, item_name, dest_path)
-            if folder['success']:
-                upload_folder_content(osf_cookie, pid, full_path, folder['id'])
-        else:  # File
-            upload_file(osf_cookie, pid, full_path, item_name, dest_path)
-
-    return True
-
-@celery_app.task
-def create_folder(osf_cookie, pid, folder_name, dest_path):
-    dest_arr = dest_path.split('/')
-    response = requests.put(
-        waterbutler_api_url_for(
-            pid, dest_arr[0], path='/' + os.path.join(*dest_arr[1:]),
-            name=folder_name, kind='folder', meta='', _internal=True
-        ),
-        cookies={
-            'osf': osf_cookie
-        }
-    )
-    if response.status_code == requests.codes.created:
-        data = response.json()
-        return {
-            'success': True,
-            'id': data['data']['id']
-        }
-    return {
-        'success': False
-    }
-
-@celery_app.task
-def upload_file(osf_cookie, pid, file_path, file_name, dest_path):
-    response = None
-    dest_arr = dest_path.split('/')
-    with open(file_path, 'r') as f:
-        response = requests.put(
-            waterbutler_api_url_for(
-                pid, dest_arr[0], path='/' + os.path.join(*dest_arr[1:]),
-                name=file_name, kind='file', _internal=True
-            ),
-            data=f,
-            cookies={
-                'osf': osf_cookie
-            }
-        )
-    return response
+    return subprocess.Popen(command)
+#    return_value = subprocess.call(command)
+#    return return_value == 0
+#
+#@celery_app.task
+#def upload_folder_content(osf_cookie, pid, path, dest_path):
+#    '''
+#    Upload all the content (files and folders) inside a folder.
+#    '''
+#    content_list = os.listdir(path)
+#
+#    for item_name in content_list:
+#        full_path = os.path.join(path, item_name)
+#        if os.path.isdir(full_path):  # Create directory
+#            folder = create_folder(osf_cookie, pid, item_name, dest_path)
+#            if folder['success']:
+#                upload_folder_content(osf_cookie, pid, full_path, folder['id'])
+#        else:  # File
+#            upload_file(osf_cookie, pid, full_path, item_name, dest_path)
+#
+#    return True
+#
+#@celery_app.task
+#def create_folder(osf_cookie, pid, folder_name, dest_path):
+#    dest_arr = dest_path.split('/')
+#    response = requests.put(
+#        waterbutler_api_url_for(
+#            pid, dest_arr[0], path='/' + os.path.join(*dest_arr[1:]),
+#            name=folder_name, kind='folder', meta='', _internal=True
+#        ),
+#        cookies={
+#            'osf': osf_cookie
+#        }
+#    )
+#    if response.status_code == requests.codes.created:
+#        data = response.json()
+#        return {
+#            'success': True,
+#            'id': data['data']['id']
+#        }
+#    return {
+#        'success': False
+#    }
+#
+#@celery_app.task
+#def upload_file(osf_cookie, pid, file_path, file_name, dest_path):
+#    response = None
+#    dest_arr = dest_path.split('/')
+#    with open(file_path, 'r') as f:
+#        response = requests.put(
+#            waterbutler_api_url_for(
+#                pid, dest_arr[0], path='/' + os.path.join(*dest_arr[1:]),
+#                name=file_name, kind='file', _internal=True
+#            ),
+#            data=f,
+#            cookies={
+#                'osf': osf_cookie
+#            }
+#        )
+#    return response

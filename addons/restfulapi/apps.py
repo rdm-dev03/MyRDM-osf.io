@@ -1,4 +1,4 @@
-from addons.base.apps import BaseAddonAppConfig, generic_root_folder
+from addons.base.apps import BaseAddonAppConfig
 
 
 class RestfulapiAddonAppConfig(BaseAddonAppConfig):

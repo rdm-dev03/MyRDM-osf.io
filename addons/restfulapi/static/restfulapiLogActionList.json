@@ -1,0 +1,4 @@
+{
+    "restfulapi_submit": "${user} submitted a download from a RESTfulAPI.",
+    "restfulapi_cancel": "${user} cancelled a download from a RESTfulAPI."
+}

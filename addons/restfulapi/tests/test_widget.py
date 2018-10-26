@@ -6,7 +6,7 @@ from osf_tests.factories import AuthUserFactory, ProjectFactory
 from framework.auth import Auth
 from addons.restfulapi import views
 from .utils import MockResponse
-
+from api.base.settings.defaults import OSF_URL
 
 class TestRestfulapiWidget(OsfTestCase):
     def setUp(self):
@@ -15,15 +15,12 @@ class TestRestfulapiWidget(OsfTestCase):
         self.auth = Auth(user=self.user)
         self.project = ProjectFactory(creator=self.user)
 
-    @mock.patch('addons.restfulapi.views.requests')
-    @mock.patch('addons.restfulapi.views.main_task')
-    def test_valid_input(self, main_task_mock, requests_mock):
-        main_task_mock.delay.return_value = 'abcdefghijklmn'
-        requests_mock.head.return_value = MockResponse({'data': {}}, 200)
 
-        url = self.project.api_url_for('restfulapi_widget')
+    @mock.patch('addons.restfulapi.views.get_files')
+    def test_valid_input(self, get_files_mock):
+        url = self.project.api_url_for('restfulapi_download')
         response = self.app.post_json(url, {
-            'url': 'example.com/hello_world.json',
+            'url': OSF_URL,
             'recursive': False,
             'interval': False,
             'intervalValue': '3000',
@@ -31,17 +28,31 @@ class TestRestfulapiWidget(OsfTestCase):
             'folderId': '1234567890abcdef'
         }, auth=self.user.auth)
 
-        main_task_mock.delay.assert_called()
+        get_files_mock.delay.assert_called()
         assert response.status_code == 200
         assert response.json['status'] == 'OK'
 
-    @mock.patch('addons.restfulapi.views.requests')
-    @mock.patch('addons.restfulapi.views.main_task')
-    def test_missing_url(self, main_task_mock, requests_mock):
-        main_task_mock.delay.return_value = 'abcdefghijklmn'
-        requests_mock.head.return_value = MockResponse({'data': {}}, 404)
 
-        url = self.project.api_url_for('restfulapi_widget')
+    @mock.patch('addons.restfulapi.views.get_files')
+    def test_url_with_unnecessary_part(self, get_files_mock):
+        url = self.project.api_url_for('restfulapi_download')
+        response = self.app.post_json(url, {
+            'url': OSF_URL + ' --spider --force-html -i',
+            'recursive': False,
+            'interval': False,
+            'intervalValue': '3000',
+            'pid': self.project._id,
+            'folderId': '1234567890abcdef'
+        }, auth=self.user.auth)
+
+        get_files_mock.delay.assert_called()
+        assert response.status_code == 200
+        assert response.json['status'] == 'OK'
+
+
+    @mock.patch('addons.restfulapi.views.get_files')
+    def test_missing_url(self, get_files_mock):
+        url = self.project.api_url_for('restfulapi_download')
         response = self.app.post_json(url, {
             'url': '',
             'recursive': False,
@@ -51,20 +62,17 @@ class TestRestfulapiWidget(OsfTestCase):
             'folderId': '1234567890abcdef'
         }, auth=self.user.auth)
 
-        assert not main_task_mock.delay.called
+        assert not get_files_mock.delay.called
         assert response.status_code == 200
         assert response.json['status'] == 'Failed'
         assert response.json['message'] == 'Please specify an URL.'
 
-    @mock.patch('addons.restfulapi.views.requests')
-    @mock.patch('addons.restfulapi.views.main_task')
-    def test_missing_destination(self, main_task_mock, requests_mock):
-        main_task_mock.delay.return_value = 'abcdefghijklmn'
-        requests_mock.head.return_value = MockResponse({'data': {}}, 404)
 
-        url = self.project.api_url_for('restfulapi_widget')
+    @mock.patch('addons.restfulapi.views.get_files')
+    def test_missing_destination(self, get_files_mock):
+        url = self.project.api_url_for('restfulapi_download')
         response = self.app.post_json(url, {
-            'url': 'example.com/hello_world.json',
+            'url': OSF_URL,
             'recursive': False,
             'interval': False,
             'intervalValue': '3000',
@@ -72,20 +80,17 @@ class TestRestfulapiWidget(OsfTestCase):
             'folderId': ''
         }, auth=self.user.auth)
 
-        assert not main_task_mock.delay.called
+        assert not get_files_mock.delay.called
         assert response.status_code == 200
         assert response.json['status'] == 'Failed'
         assert response.json['message'] == 'Please specify the destination to save the file(s).'
 
-    @mock.patch('addons.restfulapi.views.requests')
-    @mock.patch('addons.restfulapi.views.main_task')
-    def test_invalid_url(self, main_task_mock, requests_mock):
-        main_task_mock.delay.return_value = 'abcdefghijklmn'
-        requests_mock.head.return_value = MockResponse({'data': {}}, 404)
 
-        url = self.project.api_url_for('restfulapi_widget')
+    @mock.patch('addons.restfulapi.views.get_files')
+    def test_url_not_exists(self, get_files_mock):
+        url = self.project.api_url_for('restfulapi_download')
         response = self.app.post_json(url, {
-            'url': 'site.that.dont.exist',
+            'url': 'http://www.google.com/pagenotexists',
             'recursive': False,
             'interval': False,
             'intervalValue': '3000',
@@ -93,10 +98,28 @@ class TestRestfulapiWidget(OsfTestCase):
             'folderId': '1234567890abcdef'
         }, auth=self.user.auth)
 
-        assert not main_task_mock.delay.called
+        assert not get_files_mock.delay.called
         assert response.status_code == 200
         assert response.json['status'] == 'Failed'
         assert response.json['message'] == 'URL returned an invalid response.'
+
+
+    @mock.patch('addons.restfulapi.views.get_files')
+    def test_domain_cannot_resolve(self, get_files_mock):
+        url = self.project.api_url_for('restfulapi_download')
+        response = self.app.post_json(url, {
+            'url': 'http://site.that.dont.exist',
+            'recursive': False,
+            'interval': False,
+            'intervalValue': '3000',
+            'pid': self.project._id,
+            'folderId': '1234567890abcdef'
+        }, auth=self.user.auth)
+
+        assert not get_files_mock.delay.called
+        assert response.status_code == 200
+        assert response.json['status'] == 'Failed'
+        assert response.json['message'] == 'An error ocurred while accessing the URL.'
 
 
 class TestMainTask(OsfTestCase):
@@ -136,6 +159,7 @@ class TestMainTask(OsfTestCase):
         )
         assert return_value
 
+
     @mock.patch('addons.restfulapi.views.shutil')
     @mock.patch('addons.restfulapi.views.upload_folder_content')
     @mock.patch('addons.restfulapi.views.subprocess')
@@ -167,3 +191,4 @@ class TestMainTask(OsfTestCase):
             osf_cookie, self.project._id, tmp_path, data['folderId']
         )
         assert return_value
+
