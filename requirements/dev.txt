@@ -16,6 +16,8 @@ mock==1.0.1
 Faker==0.8.13
 schema==0.3.1
 responses==0.8.1
+pytest-sftpserver==1.2.0
+git+git://github.com/oz123/pytest-localftpserver.git@db7afe6b947d204c4f0ee465c5e3f39a21eb5939
 
 # Syntax checking
 flake8==3.5.0

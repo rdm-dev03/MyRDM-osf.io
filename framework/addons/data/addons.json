@@ -381,6 +381,36 @@
                 "status": "partial",
                 "text": "Bitbucket content will be registered, but version history will not be copied to the registration."
             }
+        },
+        "FTP": {
+            "Permissions": {
+                "status": "none",
+                "text": "The OSF does not affect the permissions of FTP."
+            },
+            "View / download file versions": {
+                "status": "none",
+                "text": "The FTP add-on does not provide Storage Features."
+            },
+            "Add / update files": {
+                "status": "none",
+                "text": "The FTP add-on does not provide Storage Features."
+            },
+            "Delete files": {
+                "status": "none",
+                "text": "The FTP add-on does not provide Storage Features."
+            },
+            "Logs": {
+                "status": "none",
+                "text": "The FTP add-on does not provide Storage Features."
+            },
+            "Forking": {
+                "status": "partial",
+                "text": "Forking a project or component copies information about linked FTP but the OSF does not affect authentication of FTP."
+            },
+            "Registering": {
+                "status": "none",
+                "text": "FTP information will not be registered."
+            }
         }
     },
     "disclaimers": ["This add-on connects your OSF project to an external service. Use of this service is bound by its terms and conditions. The OSF is not responsible for the service or for your use thereof.", "This add-on allows you to store files using an external service. Files added to this add-on are not stored within the OSF."]

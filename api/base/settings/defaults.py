@@ -112,6 +112,7 @@ INSTALLED_APPS = (
     'addons.twofactor',
     'addons.wiki',
     'addons.zotero',
+    'addons.ftp',
 )
 
 # local development using https

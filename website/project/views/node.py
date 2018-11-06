@@ -53,6 +53,7 @@ from addons.wiki.utils import serialize_wiki_widget
 from addons.wiki.models import WikiVersion
 from addons.dataverse.utils import serialize_dataverse_widget
 from addons.forward.utils import serialize_forward_widget
+from addons.ftp.utils import serialize_ftp_widget
 
 r_strip_html = lambda collection: rapply(collection, strip_html)
 logger = logging.getLogger(__name__)
@@ -449,7 +450,8 @@ def view_project(auth, node, **kwargs):
         'mendeley': None,
         'zotero': None,
         'forward': None,
-        'dataverse': None
+        'dataverse': None,
+        'ftp': None
     }
 
     if 'wiki' in ret['addons']:
@@ -470,6 +472,9 @@ def view_project(auth, node, **kwargs):
         node_addon = node.get_addon('mendeley')
         mendeley_widget_data = MendeleyCitationsProvider().widget(node_addon)
         addons_widget_data['mendeley'] = mendeley_widget_data
+
+    if 'ftp' in ret['addons']:
+        addons_widget_data['ftp'] = serialize_ftp_widget(node)
 
     ret.update({'addons_widget_data': addons_widget_data})
     return ret
@@ -880,6 +885,9 @@ def serialize_collections(cgms, auth):
         'url': '/collections/{}/'.format(cgm.collection.provider._id),
         'status': cgm.status,
         'type': cgm.collected_type,
+        'issue': cgm.issue,
+        'volume': cgm.volume,
+        'program_area': cgm.program_area,
         'subjects': list(cgm.subjects.values_list('text', flat=True)),
         'is_public': cgm.collection.is_public,
         'logo': cgm.collection.provider.get_asset_url('favicon')
