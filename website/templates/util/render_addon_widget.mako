@@ -8,6 +8,10 @@
                     % if addon_data['has_page']:
                         <a href="${node['url']}${addon_data['short_name']}/">  <i class="fa fa-external-link"></i> </a>
                     % endif
+                    % if addon_name == 'sparql':
+                        <span class="permalink"></span><button class="btn btn-link project-toggle"><i class="fa fa-angle-down"></i></button>
+                    % endif
+
                 </div>
             </div>
             % if addon_data['complete']:
@@ -79,6 +83,10 @@
                         </div>
                     % endif
 
+                % endif
+
+                % if addon_name == 'sparql':
+                <%include file="/sparql/templates/widget.mako"/>
                 % endif
 
                 % if addon_name == 'forward':
