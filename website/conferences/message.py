@@ -70,9 +70,9 @@ class ConferenceMessage(object):
         dkim_header = self.form.get('X-Mailgun-Dkim-Check-Result')
         spf_header = self.form.get('X-Mailgun-Spf')
         return (
-            (sscore_header and sscore_header > SSCORE_MAX_VALUE) or
-            (dkim_header and dkim_header not in DKIM_PASS_VALUES) or
-            (spf_header and spf_header not in SPF_PASS_VALUES)
+            (sscore_header and sscore_header > SSCORE_MAX_VALUE)
+            or (dkim_header and dkim_header not in DKIM_PASS_VALUES)
+            or (spf_header and spf_header not in SPF_PASS_VALUES)
         )
 
     @cached_property

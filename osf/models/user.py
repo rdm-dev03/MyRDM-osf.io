@@ -664,8 +664,8 @@ class OSFUser(DirtyFieldsMixin, GuidMixin, BaseModel, AbstractBaseUser, Permissi
         for service in user.external_identity:
             for service_id in user.external_identity[service].iterkeys():
                 if not (
-                    service_id in self.external_identity.get(service, '') and
-                    self.external_identity[service][service_id] == 'VERIFIED'
+                    service_id in self.external_identity.get(service, '')
+                    and self.external_identity[service][service_id] == 'VERIFIED'
                 ):
                     # Prevent 'CREATE', merging user has already been created.
                     external = user.external_identity[service][service_id]
@@ -825,11 +825,11 @@ class OSFUser(DirtyFieldsMixin, GuidMixin, BaseModel, AbstractBaseUser, Permissi
             'VERIFIED' in sum([each.values() for each in self.external_identity.values()], [])
         )
         self.is_active = (
-            self.is_registered and
-            self.is_confirmed and
-            can_login and
-            not self.is_merged and
-            not self.is_disabled
+            self.is_registered
+            and self.is_confirmed
+            and can_login
+            and not self.is_merged
+            and not self.is_disabled
         )
 
     # Overrides BaseModel
@@ -933,8 +933,8 @@ class OSFUser(DirtyFieldsMixin, GuidMixin, BaseModel, AbstractBaseUser, Permissi
         verification = self.email_verifications[token]
         # Not all tokens are guaranteed to have expiration dates
         if (
-            'expiration' in verification and
-            verification['expiration'].replace(tzinfo=pytz.utc) < timezone.now()
+            'expiration' in verification
+            and verification['expiration'].replace(tzinfo=pytz.utc) < timezone.now()
         ):
             raise ExpiredTokenError
 
@@ -992,8 +992,8 @@ class OSFUser(DirtyFieldsMixin, GuidMixin, BaseModel, AbstractBaseUser, Permissi
 
         if token and self.verification_key_v2:
             try:
-                return (self.verification_key_v2['token'] == token and
-                        self.verification_key_v2['expires'] > timezone.now())
+                return (self.verification_key_v2['token'] == token
+                        and self.verification_key_v2['expires'] > timezone.now())
             except AttributeError:
                 return False
         return False

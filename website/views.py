@@ -253,8 +253,8 @@ def resolve_guid(guid, suffix=None):
                     # admins and moderators should be able to know it exists.
                     auth = Auth.from_kwargs(request.args.to_dict(), {})
                     # Check if user isn't a nonetype or that the user has admin/moderator/superuser permissions
-                    if auth.user is None or not (auth.user.has_perm('view_submissions', referent.provider) or
-                            referent.node.has_permission(auth.user, permissions.ADMIN)):
+                    if auth.user is None or not (auth.user.has_perm('view_submissions', referent.provider)
+                            or referent.node.has_permission(auth.user, permissions.ADMIN)):
                         raise HTTPError(http.NOT_FOUND)
 
                 file_referent = referent.primary_file
