@@ -2066,8 +2066,8 @@ class TestNodeBulkUpdate:
             new_title, url):
         res = app.put_json_api(url, public_payload, auth=user.auth, bulk=True)
         assert res.status_code == 200
-        assert ({public_project_one._id, public_project_two._id} ==
-                {res.json['data'][0]['id'], res.json['data'][1]['id']})
+        assert ({public_project_one._id, public_project_two._id}
+                == {res.json['data'][0]['id'], res.json['data'][1]['id']})
         assert res.json['data'][0]['attributes']['title'] == new_title
         assert res.json['data'][1]['attributes']['title'] == new_title
 
@@ -2382,8 +2382,8 @@ class TestNodeBulkPartialUpdate:
             url, public_payload, auth=user.auth,
             expect_errors=True, bulk=True)
         assert res.status_code == 200
-        assert ({public_project_one._id, public_project_two._id} ==
-                {res.json['data'][0]['id'], res.json['data'][1]['id']})
+        assert ({public_project_one._id, public_project_two._id}
+                == {res.json['data'][0]['id'], res.json['data'][1]['id']})
         assert res.json['data'][0]['attributes']['title'] == new_title
         assert res.json['data'][1]['attributes']['title'] == new_title
 
@@ -2393,8 +2393,8 @@ class TestNodeBulkPartialUpdate:
         res = app.patch_json_api(
             url, private_payload, auth=user.auth, bulk=True)
         assert res.status_code == 200
-        assert ({private_project_one._id, private_project_two._id} ==
-                {res.json['data'][0]['id'], res.json['data'][1]['id']})
+        assert ({private_project_one._id, private_project_two._id}
+                == {res.json['data'][0]['id'], res.json['data'][1]['id']})
         assert res.json['data'][0]['attributes']['title'] == new_title
         assert res.json['data'][1]['attributes']['title'] == new_title
 

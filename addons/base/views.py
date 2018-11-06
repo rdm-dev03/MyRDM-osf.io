@@ -399,10 +399,10 @@ def create_waterbutler_log(payload, **kwargs):
                     dest_path = os.path.dirname(dest_path)
                     src_path = os.path.dirname(src_path)
                 if (
-                    os.path.split(dest_path)[0] == os.path.split(src_path)[0] and
-                    dest['provider'] == src['provider'] and
-                    dest['nid'] == src['nid'] and
-                    dest['name'] != src['name']
+                    os.path.split(dest_path)[0] == os.path.split(src_path)[0]
+                    and dest['provider'] == src['provider']
+                    and dest['nid'] == src['nid']
+                    and dest['name'] != src['name']
                 ):
                     action = LOG_ACTION_MAP['rename']
 

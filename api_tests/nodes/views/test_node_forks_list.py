@@ -124,8 +124,8 @@ class TestNodeForksList:
             self, app, user, private_project, private_component,
             private_fork, pointer, private_project_url):
         res = app.get(
-            private_project_url +
-            '?embed=children&embed=node_links&embed=logs&embed=contributors&embed=forked_from',
+            private_project_url
+            + '?embed=children&embed=node_links&embed=logs&embed=contributors&embed=forked_from',
             auth=user.auth)
         assert res.status_code == 200
         assert len(res.json['data']) == 1
@@ -316,8 +316,8 @@ class TestNodeForkCreate:
     def test_can_fork_private_node_logged_in_contributor(
             self, app, user, private_project, fork_data, private_project_url):
         res = app.post_json_api(
-            private_project_url +
-            '?embed=children&embed=node_links&embed=logs&embed=contributors&embed=forked_from',
+            private_project_url
+            + '?embed=children&embed=node_links&embed=logs&embed=contributors&embed=forked_from',
             fork_data, auth=user.auth)
         assert res.status_code == 201
 

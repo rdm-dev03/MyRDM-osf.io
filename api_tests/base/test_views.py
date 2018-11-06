@@ -113,7 +113,7 @@ class TestApiBaseViews(ApiTestCase):
     def test_view_classes_define_or_override_serializer_class(self):
         for view in VIEW_CLASSES:
             has_serializer_class = getattr(view, 'serializer_class', None) or \
-                                   getattr(view, 'get_serializer_class', None)
+                getattr(view, 'get_serializer_class', None)
             assert_true(
                 has_serializer_class,
                 '{0} should include serializer class or override get_serializer_class()'.format(view)

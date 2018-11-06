@@ -99,10 +99,10 @@ class Registration(AbstractNode):
     @property
     def sanction(self):
         sanction = (
-            self.embargo_termination_approval or
-            self.retraction or
-            self.embargo or
-            self.registration_approval
+            self.embargo_termination_approval
+            or self.retraction
+            or self.embargo
+            or self.registration_approval
         )
         if sanction:
             return sanction

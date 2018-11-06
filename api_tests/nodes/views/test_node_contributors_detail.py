@@ -342,8 +342,8 @@ class TestNodeContributorOrdering:
         contributor_list = res.json['data']
         assert contrib_user_id(contributor_list[0]) == contributor_to_move
         assert (
-            contrib_user_id(contributor_list[last_position]) ==
-            former_second_to_last_contributor._id)
+            contrib_user_id(contributor_list[last_position])
+            == former_second_to_last_contributor._id)
 
     def test_move_second_to_last_contributor_down_past_bottom(
             self, app, user, contribs, project,
@@ -373,8 +373,8 @@ class TestNodeContributorOrdering:
         assert contrib_user_id(
             contributor_list[last_position]) == contributor_to_move
         assert (
-            contrib_user_id(contributor_list[last_position - 1]) ==
-            former_last_contributor._id)
+            contrib_user_id(contributor_list[last_position - 1])
+            == former_last_contributor._id)
 
     def test_move_top_contributor_down_to_second_to_last_position_with_negative_numbers(
             self, app, user, contribs, project, contrib_user_id, last_position, url_contrib_base):

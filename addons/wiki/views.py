@@ -185,8 +185,8 @@ def project_wiki_view(auth, wname, path=None, **kwargs):
     can_edit = (
         auth.logged_in and not
         node.is_registration and (
-            node.has_permission(auth.user, 'write') or
-            wiki_settings.is_publicly_editable
+            node.has_permission(auth.user, 'write')
+            or wiki_settings.is_publicly_editable
         )
     )
     versions = _get_wiki_versions(node, wiki_name, anonymous=anonymous)

@@ -16,9 +16,9 @@ def list_citation_styles():
     citation_styles = CitationStyle.objects.all()
     if query:
         citation_styles = CitationStyle.objects.filter(
-            Q(_id__icontains=query) |
-            Q(title__icontains=query) |
-            Q(short_title__icontains=query)
+            Q(_id__icontains=query)
+            | Q(title__icontains=query)
+            | Q(short_title__icontains=query)
         )
     return {
         'styles': [style.to_json() for style in citation_styles if style.has_bibliography]

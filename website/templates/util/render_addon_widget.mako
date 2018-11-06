@@ -5,6 +5,9 @@
             <div class="panel-heading clearfix">
                 <h3 class="panel-title">${addon_data['full_name']}</h3>
                 <div class="pull-right">
+                    % if addon_name in ['ftp']:
+                        <span class="permalink"></span><button class="btn btn-link project-toggle"><i class="fa fa-angle-down"></i></button>
+                    % endif
                     % if addon_data['has_page']:
                         <a href="${node['url']}${addon_data['short_name']}/">  <i class="fa fa-external-link"></i> </a>
                     % endif
@@ -135,6 +138,9 @@
                     </div>
                 % endif
 
+                % if addon_name == 'ftp':
+                    <%include file="/ftp/templates/widget.mako"/>
+                % endif
 
                 </div>
             % else:

@@ -181,9 +181,9 @@ def get_configured_projects(user):
     """
     configured_projects = set()
     user_subscriptions = get_all_user_subscriptions(user, extra=(
-        ~Q(node__type='osf.collection') &
-        ~Q(node__type='osf.quickfilesnode') &
-        Q(node__is_deleted=False)
+        ~Q(node__type='osf.collection')
+        & ~Q(node__type='osf.quickfilesnode')
+        & Q(node__is_deleted=False)
     ))
 
     for subscription in user_subscriptions:
@@ -191,8 +191,8 @@ def get_configured_projects(user):
         node = subscription.owner
 
         if (
-            (subscription.none.filter(id=user.id).exists() and not node.parent_id) or
-            node._id not in user.notifications_configured
+            (subscription.none.filter(id=user.id).exists() and not node.parent_id)
+            or node._id not in user.notifications_configured
         ):
             continue
 
@@ -216,9 +216,9 @@ def get_all_user_subscriptions(user, extra=None):
     """ Get all Subscription objects that the user is subscribed to"""
     NotificationSubscription = apps.get_model('osf.NotificationSubscription')
     queryset = NotificationSubscription.objects.filter(
-        Q(none=user.pk) |
-        Q(email_digest=user.pk) |
-        Q(email_transactional=user.pk)
+        Q(none=user.pk)
+        | Q(email_digest=user.pk)
+        | Q(email_transactional=user.pk)
     ).distinct()
     return queryset.filter(extra) if extra else queryset
 
@@ -476,9 +476,9 @@ def format_user_and_project_subscriptions(user):
             'node': {
                 'id': user._id,
                 'title': 'Default Notification Settings',
-                'help': 'These are default settings for new projects you create ' +
-                        'or are added to. Modifying these settings will not ' +
-                        'modify settings on existing projects.'
+                'help': 'These are default settings for new projects you create '
+                        + 'or are added to. Modifying these settings will not '
+                        + 'modify settings on existing projects.'
             },
             'kind': 'heading',
             'children': format_user_subscriptions(user)
@@ -487,8 +487,8 @@ def format_user_and_project_subscriptions(user):
             'node': {
                 'id': '',
                 'title': 'Project Notifications',
-                'help': 'These are settings for each of your projects. Modifying ' +
-                        'these settings will only modify the settings for the selected project.'
+                'help': 'These are settings for each of your projects. Modifying '
+                        + 'these settings will only modify the settings for the selected project.'
             },
             'kind': 'heading',
             'children': format_data(user, get_configured_projects(user))

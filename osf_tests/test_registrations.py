@@ -60,8 +60,8 @@ def test_factory(user, project):
     assert registration2.registered_from == project
     assert registration2.registered_user == user2
     assert (
-        registration2.registered_meta[get_default_metaschema()._id] ==
-        {'some': 'data'}
+        registration2.registered_meta[get_default_metaschema()._id]
+        == {'some': 'data'}
     )
 
 
@@ -112,8 +112,8 @@ class TestRegisterNode:
     def test_contributors(self, registration, project):
         assert registration.contributors.count() == project.contributors.count()
         assert (
-            set(registration.contributors.values_list('id', flat=True)) ==
-            set(project.contributors.values_list('id', flat=True))
+            set(registration.contributors.values_list('id', flat=True))
+            == set(project.contributors.values_list('id', flat=True))
         )
 
     def test_forked_from(self, registration, project, auth):
@@ -142,8 +142,8 @@ class TestRegisterNode:
 
     def test_tags(self, registration, project):
         assert (
-            set(registration.tags.values_list('name', flat=True)) ==
-            set(project.tags.values_list('name', flat=True))
+            set(registration.tags.values_list('name', flat=True))
+            == set(project.tags.values_list('name', flat=True))
         )
 
     def test_nodes(self, project, user):
@@ -176,8 +176,8 @@ class TestRegisterNode:
         # Registration has the nodes
         assert registration._nodes.count() == 2
         assert(
-            set(registration._nodes.values_list('title', flat=True)) ==
-            set(project._nodes.values_list('title', flat=True))
+            set(registration._nodes.values_list('title', flat=True))
+            == set(project._nodes.values_list('title', flat=True))
         )
         # Nodes are copies and not the original versions
         for node in registration._nodes.all():
@@ -247,8 +247,8 @@ class TestRegisterNode:
 
     def test_registered_addons(self, registration):
         assert (
-            [addon.config.short_name for addon in registration.get_addons()] ==
-            [addon.config.short_name for addon in registration.registered_from.get_addons()]
+            [addon.config.short_name for addon in registration.get_addons()]
+            == [addon.config.short_name for addon in registration.registered_from.get_addons()]
         )
 
     def test_registered_user(self, project):
@@ -264,8 +264,8 @@ class TestRegisterNode:
 
     def test_registered_get_absolute_url(self, registration):
         assert (
-            registration.get_absolute_url() ==
-            '{}v2/registrations/{}/'.format(settings.API_DOMAIN, registration._id)
+            registration.get_absolute_url()
+            == '{}v2/registrations/{}/'.format(settings.API_DOMAIN, registration._id)
         )
 
     def test_registration_list(self, registration, project):
@@ -283,8 +283,8 @@ class TestRegisterNode:
 
         registration = factories.RegistrationFactory(project=node)
         assert (
-            set(registration.affiliated_institutions.values_list('id', flat=True)) ==
-            set(node.affiliated_institutions.values_list('id', flat=True))
+            set(registration.affiliated_institutions.values_list('id', flat=True))
+            == set(node.affiliated_institutions.values_list('id', flat=True))
         )
 
     def test_registration_of_project_with_no_wiki_pages(self, registration):

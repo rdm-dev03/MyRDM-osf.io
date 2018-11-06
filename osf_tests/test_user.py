@@ -247,8 +247,8 @@ class TestOSFUser:
     def test_get_confirmation_url_for_external_service(self, random_string):
         random_string.return_value = 'abcde'
         u = UnconfirmedUserFactory()
-        assert (u.get_confirmation_url(u.username, external_id_provider='service', destination='dashboard') ==
-                '{0}confirm/external/{1}/{2}/?destination={3}'.format(settings.DOMAIN, u._id, 'abcde', 'dashboard'))
+        assert (u.get_confirmation_url(u.username, external_id_provider='service', destination='dashboard')
+                == '{0}confirm/external/{1}/{2}/?destination={3}'.format(settings.DOMAIN, u._id, 'abcde', 'dashboard'))
 
     @mock.patch('website.security.random_string')
     def test_get_confirmation_token(self, random_string):
@@ -306,8 +306,8 @@ class TestOSFUser:
         u = UserFactory()
         u.add_unconfirmed_email('foo@bar.com')
         assert(
-            u.get_confirmation_url('foo@bar.com') ==
-            '{0}confirm/{1}/{2}/'.format(settings.DOMAIN, u._id, 'abcde')
+            u.get_confirmation_url('foo@bar.com')
+            == '{0}confirm/{1}/{2}/'.format(settings.DOMAIN, u._id, 'abcde')
         )
 
     def test_get_confirmation_url_when_token_is_expired_raises_error(self):
@@ -430,16 +430,16 @@ class TestOSFUser:
         user = UserFactory(fullname='Duane Johnson')
         summary = user.get_summary(formatter='surname')
         assert(
-            summary['user_display_name'] ==
-            'Johnson'
+            summary['user_display_name']
+            == 'Johnson'
         )
 
     def test_format_surname_one_name(self):
         user = UserFactory(fullname='Rock')
         summary = user.get_summary(formatter='surname')
         assert(
-            summary['user_display_name'] ==
-            'Rock'
+            summary['user_display_name']
+            == 'Rock'
         )
 
     def test_url(self, user):
@@ -447,8 +447,8 @@ class TestOSFUser:
 
     def test_absolute_url(self, user):
         assert(
-            user.absolute_url ==
-            urlparse.urljoin(settings.DOMAIN, '/{0}/'.format(user._id))
+            user.absolute_url
+            == urlparse.urljoin(settings.DOMAIN, '/{0}/'.format(user._id))
         )
 
     def test_profile_image_url(self, user):
@@ -944,8 +944,8 @@ class TestUnregisteredUser:
         token = unreg_user.get_unclaimed_record(pid)['token']
         domain = settings.DOMAIN
         assert (
-            unreg_user.get_claim_url(pid, external=True) ==
-            '{domain}user/{uid}/{pid}/claim/?token={token}'.format(**locals())
+            unreg_user.get_claim_url(pid, external=True)
+            == '{domain}user/{uid}/{pid}/claim/?token={token}'.format(**locals())
         )
 
         # test_unreg_moderator
@@ -954,8 +954,8 @@ class TestUnregisteredUser:
         token = unreg_moderator.get_unclaimed_record(pid)['token']
         domain = settings.DOMAIN
         assert (
-            unreg_moderator.get_claim_url(pid, external=True) ==
-            '{domain}user/{uid}/{pid}/claim/?token={token}'.format(**locals())
+            unreg_moderator.get_claim_url(pid, external=True)
+            == '{domain}user/{uid}/{pid}/claim/?token={token}'.format(**locals())
         )
 
     def test_get_claim_url_raises_value_error_if_not_valid_pid(self, unreg_user, unreg_moderator):
@@ -1145,8 +1145,8 @@ class TestCitationProperties:
         # Tests the csl name for a registered user
         if user.is_registered:
             assert bool(
-                user.csl_name() ==
-                {
+                user.csl_name()
+                == {
                     'given': user.csl_given_name,
                     'family': user.family_name,
                 }
@@ -1158,8 +1158,8 @@ class TestCitationProperties:
         family_name = name[-1]
         given_name = ' '.join(name[:-1])
         assert bool(
-            unreg_user.csl_name(project._id) ==
-            {
+            unreg_user.csl_name(project._id)
+            == {
                 'given': given_name,
                 'family': family_name,
             }

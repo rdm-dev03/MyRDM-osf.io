@@ -594,8 +594,8 @@ class RelationshipField(ser.HyperlinkedIdentityField):
         field_counts_requested = [val for val in params.split(',')]
 
         countable_fields = {field for field in self.parent.fields if
-                            getattr(self.parent.fields[field], 'json_api_link', False) or
-                            getattr(getattr(self.parent.fields[field], 'field', None), 'json_api_link', None)}
+                            getattr(self.parent.fields[field], 'json_api_link', False)
+                            or getattr(getattr(self.parent.fields[field], 'field', None), 'json_api_link', None)}
         for count_field in field_counts_requested:
             # Some fields will hide relationships, e.g. HideIfWithdrawal
             # Ignore related_counts for these fields
@@ -1393,9 +1393,9 @@ class JSONAPISerializer(BaseAPISerializer):
                             data['embeds'][field.field_name] = {'error': 'This field is not embeddable.'}
                     try:
                         if not (
-                            is_anonymous and
-                            hasattr(field, 'view_name') and
-                                field.view_name in self.views_to_hide_if_anonymous
+                            is_anonymous
+                            and hasattr(field, 'view_name')
+                                and field.view_name in self.views_to_hide_if_anonymous
                         ):
                             data['relationships'][field.field_name] = representation
                     except SkipField:

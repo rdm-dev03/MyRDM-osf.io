@@ -125,10 +125,10 @@ def check_permissions(node_settings, auth, connection, branch, sha=None, repo=No
         is_head = True
 
     can_edit = (
-        node_settings.owner.can_edit(auth) and
-        not node_settings.owner.is_registration and
-        has_access and
-        is_head
+        node_settings.owner.can_edit(auth)
+        and not node_settings.owner.is_registration
+        and has_access
+        and is_head
     )
 
     return can_edit

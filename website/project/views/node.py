@@ -449,7 +449,8 @@ def view_project(auth, node, **kwargs):
         'mendeley': None,
         'zotero': None,
         'forward': None,
-        'dataverse': None
+        'dataverse': None,
+        'ftp': None
     }
 
     if 'wiki' in ret['addons']:
@@ -470,6 +471,9 @@ def view_project(auth, node, **kwargs):
         node_addon = node.get_addon('mendeley')
         mendeley_widget_data = MendeleyCitationsProvider().widget(node_addon)
         addons_widget_data['mendeley'] = mendeley_widget_data
+
+    if 'ftp' in ret['addons']:
+        addons_widget_data['ftp'] = serialize_ftp_widget(node)
 
     ret.update({'addons_widget_data': addons_widget_data})
     return ret
@@ -746,8 +750,8 @@ def _view_project(node, auth, primary=False,
             'is_pending_embargo': node.is_pending_embargo if is_registration else False,
             'is_embargoed': node.is_embargoed if is_registration else False,
             'is_pending_embargo_termination': is_registration and node.is_embargoed and (
-                node.embargo_termination_approval and
-                node.embargo_termination_approval.is_pending_approval
+                node.embargo_termination_approval
+                and node.embargo_termination_approval.is_pending_approval
             ),
             'registered_from_url': node.registered_from.url if is_registration else '',
             'registered_date': iso8601format(node.registered_date) if is_registration else '',
@@ -886,8 +890,8 @@ def serialize_collections(cgms, auth):
         'subjects': list(cgm.subjects.values_list('text', flat=True)),
         'is_public': cgm.collection.is_public,
         'logo': cgm.collection.provider.get_asset_url('favicon')
-    } for cgm in cgms if cgm.collection.provider and (cgm.collection.is_public or
-        (auth.user and auth.user.has_perm('read_collection', cgm.collection)))]
+    } for cgm in cgms if cgm.collection.provider and (cgm.collection.is_public
+        or (auth.user and auth.user.has_perm('read_collection', cgm.collection)))]
 
 def serialize_children(child_list, nested, indent=0):
     """

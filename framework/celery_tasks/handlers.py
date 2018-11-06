@@ -63,8 +63,8 @@ def _enqueue_task(signature):
     :param signature: Celery task signature
     """
     if (
-        context_stack.top is None and
-        getattr(api_globals, 'request', None) is None
+        context_stack.top is None
+        and getattr(api_globals, 'request', None) is None
     ):  # Not in a request context
         signature()
     else:

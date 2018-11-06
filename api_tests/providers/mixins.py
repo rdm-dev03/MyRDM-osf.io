@@ -270,8 +270,8 @@ class ProviderSubjectsMixin(ProviderMixinBase):
 
     def test_no_rules_with_parents_filter(self, app, lawless_url, subB, subI, subM):
         res = app.get(
-            lawless_url +
-            'filter[parents]={}'.format(
+            lawless_url
+            + 'filter[parents]={}'.format(
                 subB._id))
 
         assert res.status_code == 200
@@ -279,16 +279,16 @@ class ProviderSubjectsMixin(ProviderMixinBase):
         assert res.json['data'][0]['attributes']['text'] == 'F'
 
         res = app.get(
-            lawless_url +
-            'filter[parents]={}'.format(
+            lawless_url
+            + 'filter[parents]={}'.format(
                 subI._id))
 
         assert res.status_code == 200
         assert res.json['links']['meta']['total'] == 2
 
         res = app.get(
-            lawless_url +
-            'filter[parents]={}'.format(
+            lawless_url
+            + 'filter[parents]={}'.format(
                 subM._id))
 
         assert res.status_code == 200
@@ -296,8 +296,8 @@ class ProviderSubjectsMixin(ProviderMixinBase):
 
     def test_rules_enforced_with_parents_filter(self, app, ruled_url, subB, subI, subM):
         res = app.get(
-            ruled_url +
-            'filter[parents]={}'.format(
+            ruled_url
+            + 'filter[parents]={}'.format(
                 subB._id))
 
         assert res.status_code == 200
@@ -306,8 +306,8 @@ class ProviderSubjectsMixin(ProviderMixinBase):
         assert 'F' not in texts
 
         res = app.get(
-            ruled_url +
-            'filter[parents]={}'.format(
+            ruled_url
+            + 'filter[parents]={}'.format(
                 subI._id))
 
         assert res.status_code == 200
@@ -317,14 +317,14 @@ class ProviderSubjectsMixin(ProviderMixinBase):
         assert 'K' not in texts
 
         res = app.get(
-            ruled_url +
-            'filter[parents]={}'.format(
+            ruled_url
+            + 'filter[parents]={}'.format(
                 subM._id))
 
     def test_no_rules_with_parent_filter(self, app, lawless_url, subB, subI, subM):
         res = app.get(
-            lawless_url +
-            'filter[parent]={}'.format(
+            lawless_url
+            + 'filter[parent]={}'.format(
                 subB._id))
 
         assert res.status_code == 200
@@ -332,16 +332,16 @@ class ProviderSubjectsMixin(ProviderMixinBase):
         assert res.json['data'][0]['attributes']['text'] == 'F'
 
         res = app.get(
-            lawless_url +
-            'filter[parent]={}'.format(
+            lawless_url
+            + 'filter[parent]={}'.format(
                 subI._id))
 
         assert res.status_code == 200
         assert res.json['links']['meta']['total'] == 2
 
         res = app.get(
-            lawless_url +
-            'filter[parent]={}'.format(
+            lawless_url
+            + 'filter[parent]={}'.format(
                 subM._id))
 
         assert res.status_code == 200
@@ -349,8 +349,8 @@ class ProviderSubjectsMixin(ProviderMixinBase):
 
     def test_rules_enforced_with_parent_filter(self, app, ruled_url, subB, subI, subM):
         res = app.get(
-            ruled_url +
-            'filter[parent]={}'.format(
+            ruled_url
+            + 'filter[parent]={}'.format(
                 subB._id))
 
         assert res.status_code == 200
@@ -359,8 +359,8 @@ class ProviderSubjectsMixin(ProviderMixinBase):
         assert 'F' not in texts
 
         res = app.get(
-            ruled_url +
-            'filter[parent]={}'.format(
+            ruled_url
+            + 'filter[parent]={}'.format(
                 subI._id))
 
         assert res.status_code == 200
@@ -370,8 +370,8 @@ class ProviderSubjectsMixin(ProviderMixinBase):
         assert 'K' not in texts
 
         res = app.get(
-            ruled_url +
-            'filter[parent]={}'.format(
+            ruled_url
+            + 'filter[parent]={}'.format(
                 subM._id))
 
         assert res.status_code == 200
@@ -382,8 +382,8 @@ class ProviderSubjectsMixin(ProviderMixinBase):
 
     def test_no_rules_with_grandparent_filter(self, app, lawless_url, subA):
         res = app.get(
-            lawless_url +
-            'filter[parents]={}'.format(
+            lawless_url
+            + 'filter[parents]={}'.format(
                 subA._id))
 
         assert res.status_code == 200
@@ -391,8 +391,8 @@ class ProviderSubjectsMixin(ProviderMixinBase):
 
     def test_rules_enforced_with_grandparent_filter(self, app, ruled_url, subA):
         res = app.get(
-            ruled_url +
-            'filter[parents]={}'.format(
+            ruled_url
+            + 'filter[parents]={}'.format(
                 subA._id))
 
         assert res.status_code == 200
@@ -463,22 +463,22 @@ class ProviderSpecificSubjectsMixin(ProviderMixinBase):
         assert res_1.json['links']['meta']['total'] == 4
         assert res_2.json['links']['meta']['total'] == 3
 
-        assert len(set([d['attributes']['text'] for d in res_1.json['data']]) &
-                   set([d['attributes']['text'] for d in res_2.json['data']])) \
+        assert len(set([d['attributes']['text'] for d in res_1.json['data']])
+                   & set([d['attributes']['text'] for d in res_2.json['data']])) \
                == 0
 
-        assert len(set([d['attributes']['text'] for d in res_1.json['data']]) |
-                   set([d['attributes']['text'] for d in res_2.json['data']])) \
+        assert len(set([d['attributes']['text'] for d in res_1.json['data']])
+                   | set([d['attributes']['text'] for d in res_2.json['data']])) \
                == 7
 
     def test_mapped_subjects_are_not_shared_filter(self, app, url_1, url_2, root_subject_1, root_subject_2):
         res_1 = app.get(
-            url_1 +
-            'filter[parent]={}'.format(
+            url_1
+            + 'filter[parent]={}'.format(
                 root_subject_1._id))
         res_2 = app.get(
-            url_2 +
-            'filter[parent]={}'.format(
+            url_2
+            + 'filter[parent]={}'.format(
                 root_subject_2._id))
 
         assert res_1.status_code == 200
@@ -486,22 +486,22 @@ class ProviderSpecificSubjectsMixin(ProviderMixinBase):
         assert res_1.json['links']['meta']['total'] == 1
         assert res_2.json['links']['meta']['total'] == 1
 
-        assert len(set([d['attributes']['text'] for d in res_1.json['data']]) &
-                   set([d['attributes']['text'] for d in res_2.json['data']])) \
+        assert len(set([d['attributes']['text'] for d in res_1.json['data']])
+                   & set([d['attributes']['text'] for d in res_2.json['data']])) \
                == 0
 
-        assert len(set([d['attributes']['text'] for d in res_1.json['data']]) |
-                   set([d['attributes']['text'] for d in res_2.json['data']])) \
+        assert len(set([d['attributes']['text'] for d in res_1.json['data']])
+                   | set([d['attributes']['text'] for d in res_2.json['data']])) \
                == 2
 
     def test_mapped_subjects_filter_wrong_provider(self, app, url_1, url_2, root_subject_1, root_subject_2):
         res_1 = app.get(
-            url_1 +
-            'filter[parent]={}'.format(
+            url_1
+            + 'filter[parent]={}'.format(
                 root_subject_2))
         res_2 = app.get(
-            url_2 +
-            'filter[parent]={}'.format(
+            url_2
+            + 'filter[parent]={}'.format(
                 root_subject_1))
 
         assert res_1.status_code == 200

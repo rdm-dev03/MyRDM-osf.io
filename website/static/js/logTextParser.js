@@ -610,6 +610,19 @@ var LogPieces = {
         }
     },
 
+    file_count: {
+        view: function(ctrl, logObject){
+            console.log(logObject);
+            return m('span', logObject.attributes.params.filecount);
+        }
+    },
+
+    folder_count: {
+        view: function(ctrl, logObject){
+            return m('span', logObject.attributes.params.foldercount);
+        }
+    },
+
     googledrive_path: {
         controller: function(logObject){
             var self = this;

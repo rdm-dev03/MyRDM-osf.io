@@ -594,8 +594,8 @@ class Folder(models.Model):
                 target=self.target,
                 path=path or '/' + name,
                 parent=self,
-                materialized_path=materialized_path or
-                os.path.join(self.materialized_path, name) + '/' if kind is Folder else ''
+                materialized_path=materialized_path
+                or os.path.join(self.materialized_path, name) + '/' if kind is Folder else ''
             )
         if save:
             child.save()

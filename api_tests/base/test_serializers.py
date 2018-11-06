@@ -142,9 +142,9 @@ class TestNodeSerializerAndRegistrationSerializerDifferences(ApiTestCase):
 
             if field not in visible_on_withdrawals and field not in non_registration_fields:
                 assert_true(
-                    isinstance(reg_field, base_serializers.HideIfWithdrawal) or
-                    isinstance(reg_field, base_serializers.ShowIfVersion) or
-                    isinstance(reg_field, base_serializers.ShowIfAdminScopeOrAnonymous)
+                    isinstance(reg_field, base_serializers.HideIfWithdrawal)
+                    or isinstance(reg_field, base_serializers.ShowIfVersion)
+                    or isinstance(reg_field, base_serializers.ShowIfAdminScopeOrAnonymous)
                 )
 
     def test_hide_if_registration_fields(self):
@@ -567,7 +567,7 @@ class VersionedDateTimeField(DbTestCase):
         setattr(self.node, 'last_logged', self.old_date)
         data = NodeSerializer(self.node, context={'request': req}).data['data']
         assert_equal(
-            datetime.strftime(self.old_date,self.old_format),
+            datetime.strftime(self.old_date, self.old_format),
             data['attributes']['date_modified']
         )
 
@@ -588,7 +588,7 @@ class VersionedDateTimeField(DbTestCase):
         setattr(self.node, 'last_logged', self.old_date)
         data = NodeSerializer(self.node, context={'request': req}).data['data']
         assert_equal(
-            datetime.strftime(self.old_date,self.new_format),
+            datetime.strftime(self.old_date, self.new_format),
             data['attributes']['date_modified']
         )
 

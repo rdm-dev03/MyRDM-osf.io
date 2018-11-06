@@ -145,15 +145,15 @@ def search_projects_by_title(**kwargs):
 
     if include_contributed == 'yes':
         my_projects = AbstractNode.objects.filter(
-            matching_title &
-            Q(_contributors=user)  # user is a contributor
+            matching_title
+            & Q(_contributors=user)  # user is a contributor
         )[:max_results]
         my_project_count = my_project_count
 
     if my_project_count < max_results and include_public == 'yes':
         public_projects = AbstractNode.objects.filter(
-            matching_title &
-            Q(is_public=True)  # is public
+            matching_title
+            & Q(is_public=True)  # is public
         )[:max_results - my_project_count]
 
     results = list(my_projects) + list(public_projects)

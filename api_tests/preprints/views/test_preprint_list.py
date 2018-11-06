@@ -173,7 +173,7 @@ class TestPreprintList(ApiTestCase):
         pp.date_withdrawn = timezone.now()
         pp.save()
 
-        assert not pp.ever_public # Sanity check
+        assert not pp.ever_public  # Sanity check
 
         unauth_res = self.app.get(self.url)
         user_res = self.app.get(self.url, auth=self.user.auth)
