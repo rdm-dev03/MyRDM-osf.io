@@ -1,0 +1,8 @@
+{
+    "ftp_connect": "${user} connected to a FTP server.",
+    "ftp_disconnect": "${user} disconnected from a FTP server.",
+    "ftp_download": "${user} is downloading file(s) from a FTP server.",
+    "ftp_cancel": "${user} cancelled a download from a FTP server.",
+    "ftp_upload_fail": "Request to download from a FTP server by ${user} failed to save some files to storage.",
+    "ftp_upload_success": "Request to download from a FTP server by ${user} finished successfully."
+}
