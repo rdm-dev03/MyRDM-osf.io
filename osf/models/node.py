@@ -686,9 +686,9 @@ class AbstractNode(DirtyFieldsMixin, TypedModel, AddonModelMixin, IdentifierMixi
     def draft_registrations_active(self):
         DraftRegistration = apps.get_model('osf.DraftRegistration')
         return DraftRegistration.objects.filter(
-            models.Q(branched_from=self)
-            & models.Q(deleted__isnull=True)
-            & (models.Q(registered_node=None) | models.Q(registered_node__is_deleted=True))
+            models.Q(branched_from=self) &
+            models.Q(deleted__isnull=True) &
+            (models.Q(registered_node=None) | models.Q(registered_node__is_deleted=True))
         )
 
     @property
@@ -817,10 +817,10 @@ class AbstractNode(DirtyFieldsMixin, TypedModel, AddonModelMixin, IdentifierMixi
         if not auth and not self.is_public:
             return False
 
-        return (self.is_public
-                or (auth.user and self.has_permission(auth.user, 'read'))
-                or auth.private_key in self.private_link_keys_active
-                or self.is_admin_parent(auth.user))
+        return (self.is_public or
+                (auth.user and self.has_permission(auth.user, 'read')) or
+                auth.private_key in self.private_link_keys_active or
+                self.is_admin_parent(auth.user))
 
     def can_edit(self, auth=None, user=None):
         """Return if a user is authorized to edit this node.
@@ -972,8 +972,8 @@ class AbstractNode(DirtyFieldsMixin, TypedModel, AddonModelMixin, IdentifierMixi
         if isinstance(user, Contributor):
             user = user.user
 
-        if validate and (reduce_permissions(self.get_permissions(user)) == ADMIN
-                                 and reduce_permissions(permissions) != ADMIN):
+        if validate and (reduce_permissions(self.get_permissions(user)) == ADMIN and
+                                 reduce_permissions(permissions) != ADMIN):
             admin_contribs = Contributor.objects.filter(node=self, admin=True)
             if admin_contribs.count() <= 1:
                 raise NodeStateError('Must have at least one registered admin contributor')
@@ -1573,8 +1573,8 @@ class AbstractNode(DirtyFieldsMixin, TypedModel, AddonModelMixin, IdentifierMixi
     def can_comment(self, auth):
         if self.comment_level == 'public':
             return auth.logged_in and (
-                self.is_public
-                or (auth.user and self.has_permission(auth.user, 'read'))
+                self.is_public or
+                (auth.user and self.has_permission(auth.user, 'read'))
             )
         return self.is_contributor(auth.user)
 
@@ -2146,8 +2146,8 @@ class AbstractNode(DirtyFieldsMixin, TypedModel, AddonModelMixin, IdentifierMixi
 
         # If that title hasn't been changed, apply the default prefix (once)
         if (
-            new.title == self.title and top_level
-            and language.TEMPLATED_FROM_PREFIX not in new.title
+            new.title == self.title and top_level and
+            language.TEMPLATED_FROM_PREFIX not in new.title
         ):
             new.title = ''.join((language.TEMPLATED_FROM_PREFIX, new.title,))
 

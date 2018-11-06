@@ -98,8 +98,8 @@ def github_set_config(auth, **kwargs):
         return {'message': message}, http.BAD_REQUEST
 
     changed = (
-        github_user_name != node_settings.user
-        or github_repo_name != node_settings.repo
+        github_user_name != node_settings.user or
+        github_repo_name != node_settings.repo
     )
 
     # Update hooks

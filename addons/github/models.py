@@ -358,8 +358,8 @@ class NodeSettings(BaseOAuthNodeSettings, BaseStorageAddon):
 
         """
         try:
-            message = (super(NodeSettings, self).before_remove_contributor_message(node, removed)
-            + 'You can download the contents of this repository before removing '
+            message = (super(NodeSettings, self).before_remove_contributor_message(node, removed) +
+            'You can download the contents of this repository before removing '
             'this contributor <u><a href="{url}">here</a></u>.'.format(
                 url=node.api_url + 'github/tarball/'
             ))

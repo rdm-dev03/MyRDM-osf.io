@@ -1214,8 +1214,8 @@ class TestNodeDelete(NodeCRUDTestCase):
         errors = res.json['errors']
         assert len(errors) == 1
         assert (
-            errors[0]['detail']
-            == 'Any child components must be deleted prior to deleting this project.')
+            errors[0]['detail'] ==
+            'Any child components must be deleted prior to deleting this project.')
 
     def test_delete_bookmark_collection_returns_error(self, app, user):
         bookmark_collection = find_bookmark_collection(user)

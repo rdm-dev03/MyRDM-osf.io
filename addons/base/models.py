@@ -678,9 +678,9 @@ class BaseOAuthNodeSettings(BaseNodeSettings):
     @property
     def complete(self):
         return bool(
-            self.has_auth
-            and self.external_account
-            and self.user_settings.verify_oauth_access(
+            self.has_auth and
+            self.external_account and
+            self.user_settings.verify_oauth_access(
                 node=self.owner,
                 external_account=self.external_account,
             )
@@ -689,8 +689,8 @@ class BaseOAuthNodeSettings(BaseNodeSettings):
     @property
     def configured(self):
         return bool(
-            self.complete
-            and (self.folder_id or self.folder_name or self.folder_path)
+            self.complete and
+            (self.folder_id or self.folder_name or self.folder_path)
         )
 
     @property

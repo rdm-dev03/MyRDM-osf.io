@@ -263,11 +263,11 @@ class NodeAddonDetailMixin(object):
             pass
         res = self.app.post_json_api(
             self.setting_detail_url,
-            {'data': {
-                'id': self.short_name,
-                'type': 'node_addons',
-                'attributes': {}
-            }},
+             {'data': {
+                 'id': self.short_name,
+                 'type': 'node_addons',
+                 'attributes': {}
+             }},
             auth=self.user.auth,
             expect_errors=wrong_type)
         if not wrong_type:
@@ -760,13 +760,13 @@ class TestNodeMendeleyAddon(
     @mock.patch('addons.mendeley.models.Mendeley._get_folders')
     def test_folder_list_GET_expected_behavior(self, mock_folders):
         mock_folder = mendeley.models.folders.Folder(
-            json={
-                'created': '2017-10-14T21:17:14.000Z',
-                'id': 'fasdkljla-2341-4592-10po-fds0920dks0ds',
-                'modified': '2017-10-14T21:18:00.000Z',
-                'name': 'Test Mendeley Folder'
-            },
-            session='session'
+           json = {
+              'created':'2017-10-14T21:17:14.000Z',
+              'id':'fasdkljla-2341-4592-10po-fds0920dks0ds',
+              'modified':'2017-10-14T21:18:00.000Z',
+              'name':'Test Mendeley Folder'
+           },
+           session = 'session'
         )
 
         mock_folders.return_value = [mock_folder]
@@ -794,25 +794,25 @@ class TestNodeZoteroAddon(
     def test_folder_list_GET_expected_behavior(self, mock_libraries):
         ## Testing top level - GET library behavior
         mock_library = {
-            'data': {
-                'description': '',
-                'url': '',
-                'libraryReading': 'members',
-                'version': 1,
-                'owner': 2533095,
-                'fileEditing': 'members',
-                'libraryEditing': 'members',
-                'type': 'Private',
-                'id': 18497322,
-                'name': 'Group Library I'
-            },
+          'data': {
+            'description': '',
+            'url': '',
+            'libraryReading': 'members',
             'version': 1,
-            'meta': {
-                'lastModified': '2017-10-19T22:20:41Z',
-                'numItems': 20,
-                'created': '2017-10-19T22:20:41Z'
-            },
-            'id': 18497322
+            'owner': 2533095,
+            'fileEditing': 'members',
+            'libraryEditing': 'members',
+            'type': 'Private',
+            'id': 18497322,
+            'name': 'Group Library I'
+          },
+          'version': 1,
+          'meta': {
+            'lastModified': '2017-10-19T22:20:41Z',
+            'numItems': 20,
+            'created': '2017-10-19T22:20:41Z'
+          },
+          'id': 18497322
         }
 
         mock_libraries.return_value = [mock_library, 1]
@@ -849,23 +849,23 @@ class TestNodeZoteroAddon(
     def test_sub_folder_list_GET_expected_behavior(self, mock_folders):
         ## Testing second level - GET folder behavior
         mock_folder = {
-            'library': {
-                'type': 'group',
-                'id': 18497322,
-                'name': 'Group Library I'
-            },
-            'version': 14,
-            'meta': {
-                'numCollections': 0,
-                'numItems': 1
-            },
-            'key': 'V63S7EUJ',
-            'data': {
-                'version': 14,
-                'name': 'Test Folder',
-                'key': 'FSCFSLREF',
-                'parentCollection': 'False'
-            }
+           'library':{
+              'type':'group',
+              'id':18497322,
+              'name':'Group Library I'
+           },
+           'version':14,
+           'meta':{
+              'numCollections':0,
+              'numItems':1
+           },
+           'key':'V63S7EUJ',
+           'data':{
+              'version':14,
+              'name':'Test Folder',
+              'key':'FSCFSLREF',
+              'parentCollection': 'False'
+           }
         }
 
         mock_folders.return_value = [mock_folder]
@@ -1087,8 +1087,8 @@ class TestNodeGoogleDriveAddon(
         )
 
         assert res_put.status_code == res_patch.status_code == 400
-        assert ('Must specify both folder_id and folder_path for {}'.format(self.short_name)
-                == res_put.json['errors'][0]['detail'] == res_patch.json['errors'][0]['detail'])
+        assert ('Must specify both folder_id and folder_path for {}'.format(self.short_name) ==
+                res_put.json['errors'][0]['detail'] == res_patch.json['errors'][0]['detail'])
 
     def test_settings_detail_PUT_PATCH_only_folder_path_raises_error(self):
         self.node_settings.clear_settings()
@@ -1112,8 +1112,8 @@ class TestNodeGoogleDriveAddon(
         )
 
         assert res_put.status_code == res_patch.status_code == 400
-        assert ('Must specify both folder_id and folder_path for {}'.format(self.short_name)
-                == res_put.json['errors'][0]['detail'] == res_patch.json['errors'][0]['detail'])
+        assert ('Must specify both folder_id and folder_path for {}'.format(self.short_name) ==
+                res_put.json['errors'][0]['detail'] == res_patch.json['errors'][0]['detail'])
 
     def test_settings_detail_incomplete_PUT_raises_error(self):
         self.node_settings.deauthorize(auth=self.auth)

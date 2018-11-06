@@ -1249,8 +1249,8 @@ class TestNodeContributorAdd(NodeCRUDTestCase):
             auth=user.auth, expect_errors=True)
         assert res.status_code == 404
         assert (
-            res.json['errors'][0]['detail']
-            == 'Cannot add unconfirmed user {} to node {} by guid. Add an unregistered contributor with fullname and email.'
+            res.json['errors'][0]['detail'] ==
+            'Cannot add unconfirmed user {} to node {} by guid. Add an unregistered contributor with fullname and email.'
             .format(unconfirmed_user._id, project_public._id))
 
 

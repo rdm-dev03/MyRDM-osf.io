@@ -20,9 +20,9 @@ def set_license(node, license_detail, auth, node_type='node'):
     copyright_holders = license_detail.get('copyrightHolders', [])
 
     if license_record and (
-        license_id == license_record.license_id
-        and license_year == license_record.year
-        and sorted(copyright_holders) == sorted(license_record.copyright_holders)
+        license_id == license_record.license_id and
+        license_year == license_record.year and
+        sorted(copyright_holders) == sorted(license_record.copyright_holders)
     ):
         return {}, False
 

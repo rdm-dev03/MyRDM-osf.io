@@ -398,6 +398,7 @@ class TestWikiDetailView(ApiWikiTestCase):
         res = self.app.get(url, expect_errors=True)
         assert_equal(res.status_code, 410)
 
+
     def test_public_node_wiki_relationship_links(self):
         self._set_up_public_project_with_wiki_page()
         res = self.app.get(self.public_url)

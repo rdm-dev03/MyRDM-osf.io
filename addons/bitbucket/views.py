@@ -102,8 +102,8 @@ def bitbucket_set_config(auth, **kwargs):
         return {'message': message}, http.BAD_REQUEST
 
     changed = (
-        bitbucket_user_name != node_settings.user
-        or bitbucket_repo_name != node_settings.repo
+        bitbucket_user_name != node_settings.user or
+        bitbucket_repo_name != node_settings.repo
     )
 
     # Update hooks

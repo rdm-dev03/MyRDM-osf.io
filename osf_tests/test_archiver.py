@@ -180,7 +180,7 @@ WB_FILE_TREE = {
                     ],
                 }
             }
-        ],
+       ],
     }
 }
 
@@ -278,7 +278,6 @@ def generate_schema_from_data(data):
                 'id': id,
                 'type': 'osf-upload' if prop.get('extra') else 'string'
             }
-
     def from_question(qid, question):
         if q.get('extra'):
             return {
@@ -514,7 +513,6 @@ class TestArchiverTasks(ArchiverTestCase):
     def test_archive_node_does_not_archive_empty_addons(self, mock_archive_addon, mock_send):
         with mock.patch('osf.models.mixins.AddonModelMixin.get_addon') as mock_get_addon:
             mock_addon = MockAddon()
-
             def empty_file_tree(user, version):
                 return {
                     'path': '/',
@@ -1210,7 +1208,6 @@ class TestArchiverDecorators(ArchiverTestCase):
     @mock.patch('website.archiver.signals.archive_fail.send')
     def test_fail_archive_on_error(self, mock_fail):
         e = HTTPError(418)
-
         def error(*args, **kwargs):
             raise e
 

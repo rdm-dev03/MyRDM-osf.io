@@ -62,9 +62,9 @@ class NodesFilterMixin(ListFilterMixin):
 
         if field_name == 'preprint':
             not_preprint_query = (
-                Q(preprint_file=None)
-                | Q(_is_preprint_orphan=True)
-                | Q(_has_abandoned_preprint=True)
+                Q(preprint_file=None) |
+                Q(_is_preprint_orphan=True) |
+                Q(_has_abandoned_preprint=True)
             )
 
             return ~not_preprint_query if utils.is_truthy(operation['value']) else not_preprint_query

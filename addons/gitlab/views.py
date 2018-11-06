@@ -177,9 +177,9 @@ def gitlab_set_config(auth, **kwargs):
         return {'message': message}, http.BAD_REQUEST
 
     changed = (
-        gitlab_user_name != node_settings.user
-        or gitlab_repo_name != node_settings.repo
-        or gitlab_repo_id != node_settings.repo_id
+        gitlab_user_name != node_settings.user or
+        gitlab_repo_name != node_settings.repo or
+        gitlab_repo_id != node_settings.repo_id
     )
 
     # Update hooks

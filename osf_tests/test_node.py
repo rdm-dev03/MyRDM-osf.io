@@ -579,8 +579,8 @@ class TestProject:
 
     def test_url(self, project):
         assert (
-            project.url
-            == '/{0}/'.format(project._primary_key)
+            project.url ==
+            '/{0}/'.format(project._primary_key)
         )
 
     def test_api_url(self, project):
@@ -848,8 +848,8 @@ class TestContributorMethods:
         )
         last_log = node.logs.all().order_by('-date')[0]
         assert (
-            last_log.params['contributors']
-            == [user1._id, user2._id]
+            last_log.params['contributors'] ==
+            [user1._id, user2._id]
         )
         assert node.is_contributor(user1)
         assert node.is_contributor(user2)
@@ -859,8 +859,8 @@ class TestContributorMethods:
         assert node.get_permissions(user2) == [permissions.READ, permissions.WRITE]
         last_log = node.logs.all().order_by('-date')[0]
         assert (
-            last_log.params['contributors']
-            == [user1._id, user2._id]
+            last_log.params['contributors'] ==
+            [user1._id, user2._id]
         )
 
     def test_add_contributor_unreg_user_without_unclaimed_records(self, user, node):
@@ -1213,8 +1213,8 @@ class TestContributorProperties:
         child2 = ProjectFactory(parent=child1)
         assert list(child1.admin_contributors) == sorted([project.creator, child1.creator], key=lambda user: user.family_name)
         assert (
-            list(child2.admin_contributors)
-            == sorted([project.creator, child1.creator, child2.creator], key=lambda user: user.family_name)
+            list(child2.admin_contributors) ==
+            sorted([project.creator, child1.creator, child2.creator], key=lambda user: user.family_name)
         )
         admin = UserFactory()
         project.add_contributor(admin, auth=Auth(project.creator), permissions=['read', 'write', 'admin'])
@@ -2736,12 +2736,12 @@ class TestForkNode:
 
         # Test that add-ons were copied correctly
         assert(
-            original.get_addon_names()
-            == fork.get_addon_names()
+            original.get_addon_names() ==
+            fork.get_addon_names()
         )
         assert(
-            [addon.config.short_name for addon in original.get_addons()]
-            == [addon.config.short_name for addon in fork.get_addons()]
+            [addon.config.short_name for addon in original.get_addons()] ==
+            [addon.config.short_name for addon in fork.get_addons()]
         )
 
         fork_user_auth = Auth(user=fork_user)
@@ -3207,8 +3207,8 @@ class TestCitationsProperties:
     def test_csl_single_author(self, node):
         # Nodes with one contributor generate valid CSL-data
         assert (
-            node.csl
-            == {
+            node.csl ==
+            {
                 'publisher': 'OSF',
                 'author': [{
                     'given': node.creator.given_name,
@@ -3229,8 +3229,8 @@ class TestCitationsProperties:
         node.save()
 
         assert (
-            node.csl
-            == {
+            node.csl ==
+            {
                 'publisher': 'OSF',
                 'author': [
                     {
@@ -3720,8 +3720,8 @@ class TestRemoveNode:
         assert project.is_deleted
         # parent node should have a log of the event
         assert (
-            parent_project.get_aggregate_logs_queryset(auth)[0].action
-            == 'node_removed'
+            parent_project.get_aggregate_logs_queryset(auth)[0].action ==
+            'node_removed'
         )
 
     def test_delete_project_log_present(self, project, parent_project, auth):
@@ -3863,8 +3863,8 @@ class TestTemplateNode:
         assert len(list(new.nodes)) == len(list(project1.nodes))
         # check that all children were copied
         assert (
-            [x.title for x in new.nodes]
-            == [x.title for x in project1.nodes if x not in project1.linked_nodes]
+            [x.title for x in new.nodes] ==
+            [x.title for x in project1.nodes if x not in project1.linked_nodes]
         )
         # ensure all child nodes were actually copied, instead of moved
         assert {x._primary_key for x in new.nodes}.isdisjoint(
@@ -3881,8 +3881,8 @@ class TestTemplateNode:
         assert len(list(new.nodes)) == len(list(project.nodes)) - 1
         # check that all children were copied
         assert (
-            [x.title for x in new.nodes]
-            == [x.title for x in project.nodes if x not in project.linked_nodes]
+            [x.title for x in new.nodes] ==
+            [x.title for x in project.nodes if x not in project.linked_nodes]
         )
         # ensure all child nodes were actually copied, instead of moved
         assert {x._primary_key for x in new.nodes}.isdisjoint(
@@ -3908,13 +3908,13 @@ class TestTemplateNode:
         for old_node, new_node in zip(old_nodes, new.nodes):
             if isinstance(old_node, Node):
                 assert (
-                    changes[old_node._primary_key]['title']
-                    == new_node.title
+                    changes[old_node._primary_key]['title'] ==
+                    new_node.title
                 )
             else:
                 assert (
-                    old_node.title
-                    == new_node.title
+                    old_node.title ==
+                    new_node.title
                 )
 
     def test_template_wiki_pages_not_copied(self, project, auth):
@@ -3979,8 +3979,8 @@ class TestTemplateNode:
 
         # check that all children were copied
         assert (
-            set(x.template_node._id for x in new.nodes)
-            == set(x._id for x in visible_nodes if x not in project.linked_nodes)
+            set(x.template_node._id for x in new.nodes) ==
+            set(x._id for x in visible_nodes if x not in project.linked_nodes)
         )
         # ensure all child nodes were actually copied, instead of moved
         assert bool({x._primary_key for x in new.nodes}.isdisjoint(
@@ -3990,8 +3990,8 @@ class TestTemplateNode:
         # ensure that the creator is admin for each node copied
         for node in new.nodes:
             assert (
-                node.get_permissions(other_user)
-                == ['read', 'write', 'admin']
+                node.get_permissions(other_user) ==
+                ['read', 'write', 'admin']
             )
 
 # copied from tests/test_models.py
@@ -4064,16 +4064,16 @@ class TestAddonMethods:
         assert bool(added) is True
         node.reload()
         assert (
-            len(node.get_addon_names())
-            == addon_count + 1
+            len(node.get_addon_names()) ==
+            addon_count + 1
         )
         assert (
-            len(node.addons)
-            == addon_record_count + 1
+            len(node.addons) ==
+            addon_record_count + 1
         )
         assert (
-            node.logs.latest().action
-            == NodeLog.ADDON_ADDED
+            node.logs.latest().action ==
+            NodeLog.ADDON_ADDED
         )
 
     def test_add_existing_addon(self, node, auth):
@@ -4082,12 +4082,12 @@ class TestAddonMethods:
         added = node.add_addon('wiki', auth)
         assert bool(added) is False
         assert (
-            len(node.get_addon_names())
-            == addon_count
+            len(node.get_addon_names()) ==
+            addon_count
         )
         assert (
-            len(node.addons)
-            == addon_record_count
+            len(node.addons) ==
+            addon_record_count
         )
 
     def test_delete_addon(self, node, auth):
@@ -4095,12 +4095,12 @@ class TestAddonMethods:
         deleted = node.delete_addon('wiki', auth)
         assert deleted is True
         assert (
-            len(node.get_addon_names())
-            == addon_count - 1
+            len(node.get_addon_names()) ==
+            addon_count - 1
         )
         assert (
-            node.logs.latest().action
-            == NodeLog.ADDON_REMOVED
+            node.logs.latest().action ==
+            NodeLog.ADDON_REMOVED
         )
 
     @mock.patch('addons.dropbox.models.NodeSettings.config')
@@ -4115,8 +4115,8 @@ class TestAddonMethods:
         deleted = node.delete_addon('dropbox', auth)
         assert bool(deleted) is False
         assert (
-            len(node.get_addon_names())
-            == addon_count
+            len(node.get_addon_names()) ==
+            addon_count
         )
 
 # copied from tests/test_models.py

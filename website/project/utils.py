@@ -21,8 +21,8 @@ def recent_public_registrations(n=10):
         is_public=True,
         is_deleted=False,
     ).filter(
-        Q(Q(embargo__isnull=True) | ~Q(embargo__state='unapproved'))
-        & Q(Q(retraction__isnull=True) | ~Q(retraction__state='approved'))
+        Q(Q(embargo__isnull=True) | ~Q(embargo__state='unapproved')) &
+        Q(Q(retraction__isnull=True) | ~Q(retraction__state='approved'))
     ).get_roots().order_by('-registered_date')[:n]
 
 

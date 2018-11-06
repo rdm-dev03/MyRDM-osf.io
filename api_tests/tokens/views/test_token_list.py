@@ -83,8 +83,8 @@ class TestTokenList:
 
         assert res.json['data']['attributes']['owner'] == user_one._id
         # Some fields aren't writable; make sure user can't set these
-        assert (res.json['data']['attributes']['token_id']
-                != data_sample['data']['attributes']['token_id'])
+        assert (res.json['data']['attributes']['token_id'] !=
+                data_sample['data']['attributes']['token_id'])
 
     def test_create_returns_token_id(
             self, app, url_token_list, data_sample, user_one):

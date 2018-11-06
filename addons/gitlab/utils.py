@@ -97,8 +97,8 @@ def check_permissions(node_settings, auth, connection, branch, sha=None, repo=No
         has_access = (
             repo is not None and (
                 # See https://docs.gitlab.com/ee/api/members.html
-                project_permissions.get('access_level', 0) >= 30
-                or group_permissions.get('access_level', 0) >= 30
+                project_permissions.get('access_level', 0) >= 30 or
+                group_permissions.get('access_level', 0) >= 30
             )
         )
 
@@ -110,10 +110,10 @@ def check_permissions(node_settings, auth, connection, branch, sha=None, repo=No
         is_head = True
 
     can_edit = (
-        node_settings.owner.can_edit(auth)
-        and not node_settings.owner.is_registration
-        and has_access
-        and is_head
+        node_settings.owner.can_edit(auth) and
+        not node_settings.owner.is_registration and
+        has_access and
+        is_head
     )
 
     return can_edit

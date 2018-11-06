@@ -263,8 +263,8 @@ def get_logs_to_revert(reg):
         Q(node__id__in=Node.objects.get_children(reg.registered_from).values_list('id', flat=True)) | Q(node__id=reg.registered_from.id))\
         .filter(date__gte=reg.registered_date).exclude(action__in=LOG_WHITELIST)\
         .filter(
-            Q(node=reg.registered_from)
-            | (Q(params__source__nid=reg.registered_from._id) | Q(params__destination__nid=reg.registered_from._id))).order_by('-date')
+            Q(node=reg.registered_from) |
+            (Q(params__source__nid=reg.registered_from._id) | Q(params__destination__nid=reg.registered_from._id))).order_by('-date')
 
 def revert_log_actions(file_tree, reg, obj_cache):
     logs_to_revert = get_logs_to_revert(reg)

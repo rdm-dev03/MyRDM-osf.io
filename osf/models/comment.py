@@ -87,8 +87,8 @@ class Comment(GuidMixin, SpamMixin, CommentableMixin, BaseModel):
         if not auth and not self.node.is_public:
             raise PermissionsError
 
-        if self.is_deleted and ((not auth or auth.user.is_anonymous)
-                                or (auth and not auth.user.is_anonymous and self.user._id != auth.user._id)):
+        if self.is_deleted and ((not auth or auth.user.is_anonymous) or
+                                (auth and not auth.user.is_anonymous and self.user._id != auth.user._id)):
             return None
 
         return self.content
@@ -123,9 +123,9 @@ class Comment(GuidMixin, SpamMixin, CommentableMixin, BaseModel):
                 view_timestamp = view_timestamp.replace(tzinfo=pytz.utc)
 
             return cls.objects.filter(
-                Q(node=node) & ~Q(user=user) & Q(is_deleted=False)
-                & (Q(created__gt=view_timestamp) | Q(modified__gt=view_timestamp))
-                & Q(root_target=root_target)
+                Q(node=node) & ~Q(user=user) & Q(is_deleted=False) &
+                (Q(created__gt=view_timestamp) | Q(modified__gt=view_timestamp)) &
+                Q(root_target=root_target)
             ).count()
 
         return 0

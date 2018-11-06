@@ -198,8 +198,8 @@ class NodeSettings(BaseOAuthNodeSettings, BaseStorageAddon):
 
         folder_name = folder_data['name'].replace('All Files', '') or '/ (Full Box)'
         folder_path = '/'.join(
-            [x['name'] for x in folder_data['path_collection']['entries'] if x['name']]
-            + [folder_data['name']]
+            [x['name'] for x in folder_data['path_collection']['entries'] if x['name']] +
+            [folder_data['name']]
         ).replace('All Files', '') or '/'
 
         return folder_name, folder_path

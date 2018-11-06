@@ -2059,8 +2059,8 @@ class TestCollectionBulkUpdate:
             auth=user_one.auth, bulk=True
         )
         assert res.status_code == 200
-        assert ({collection_one._id, collection_two._id}
-                == {res.json['data'][0]['id'], res.json['data'][1]['id']})
+        assert ({collection_one._id, collection_two._id} ==
+                {res.json['data'][0]['id'], res.json['data'][1]['id']})
         assert res.json['data'][0]['attributes']['title'] == title_new
         assert res.json['data'][1]['attributes']['title'] == title_new
 

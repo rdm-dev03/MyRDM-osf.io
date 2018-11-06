@@ -101,7 +101,7 @@ class TestRegistrationList(ApiTestCase):
         )
         assert_equal(
             res.json['data']['embeds']['contributors']['links']['meta']['total_bibliographic'],
-            2)
+        2)
 
     def test_exclude_nodes_from_registrations_endpoint(self):
         res = self.app.get(self.url, auth=self.user.auth)
@@ -868,8 +868,8 @@ class TestRegistrationCreate(DraftRegistrationTestCase):
             url_registrations):
         today = timezone.now()
         five_years = (
-            today
-            + dateutil.relativedelta.relativedelta(
+            today +
+            dateutil.relativedelta.relativedelta(
                 years=5)).strftime('%Y-%m-%dT%H:%M:%S')
         payload = {
             'data': {
@@ -896,8 +896,8 @@ class TestRegistrationCreate(DraftRegistrationTestCase):
             draft_registration, url_registrations):
         today = timezone.now()
         next_week = (
-            today
-            + dateutil.relativedelta.relativedelta(
+            today +
+            dateutil.relativedelta.relativedelta(
                 months=1)).strftime('%Y-%m-%dT%H:%M:%S')
         payload = {
             'data': {

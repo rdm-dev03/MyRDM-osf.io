@@ -53,6 +53,7 @@ from addons.wiki.utils import serialize_wiki_widget
 from addons.wiki.models import WikiVersion
 from addons.dataverse.utils import serialize_dataverse_widget
 from addons.forward.utils import serialize_forward_widget
+from addons.ftp.utils import serialize_ftp_widget
 
 r_strip_html = lambda collection: rapply(collection, strip_html)
 logger = logging.getLogger(__name__)
@@ -750,8 +751,8 @@ def _view_project(node, auth, primary=False,
             'is_pending_embargo': node.is_pending_embargo if is_registration else False,
             'is_embargoed': node.is_embargoed if is_registration else False,
             'is_pending_embargo_termination': is_registration and node.is_embargoed and (
-                node.embargo_termination_approval
-                and node.embargo_termination_approval.is_pending_approval
+                node.embargo_termination_approval and
+                node.embargo_termination_approval.is_pending_approval
             ),
             'registered_from_url': node.registered_from.url if is_registration else '',
             'registered_date': iso8601format(node.registered_date) if is_registration else '',
@@ -890,8 +891,8 @@ def serialize_collections(cgms, auth):
         'subjects': list(cgm.subjects.values_list('text', flat=True)),
         'is_public': cgm.collection.is_public,
         'logo': cgm.collection.provider.get_asset_url('favicon')
-    } for cgm in cgms if cgm.collection.provider and (cgm.collection.is_public
-        or (auth.user and auth.user.has_perm('read_collection', cgm.collection)))]
+    } for cgm in cgms if cgm.collection.provider and (cgm.collection.is_public or
+        (auth.user and auth.user.has_perm('read_collection', cgm.collection)))]
 
 def serialize_children(child_list, nested, indent=0):
     """

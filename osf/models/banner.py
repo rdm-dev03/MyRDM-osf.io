@@ -12,9 +12,9 @@ def validate_banner_dates(banner_id, start_date, end_date):
         raise ValidationValueError('Start date must be before end date.')
 
     overlapping = ScheduledBanner.objects.filter(
-        (models.Q(start_date__gte=start_date) & models.Q(start_date__lte=end_date))
-        | (models.Q(end_date__gte=start_date) & models.Q(end_date__lte=end_date))
-        | (models.Q(start_date__lte=start_date) & models.Q(end_date__gte=end_date))
+        (models.Q(start_date__gte=start_date) & models.Q(start_date__lte=end_date)) |
+        (models.Q(end_date__gte=start_date) & models.Q(end_date__lte=end_date)) |
+        (models.Q(start_date__lte=start_date) & models.Q(end_date__gte=end_date))
     ).exclude(id=banner_id).exists()
 
     if overlapping:

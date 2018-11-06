@@ -140,8 +140,8 @@ def format_preprint(preprint, share_type, old_subjects=None):
         'title': preprint.node.title,
         'description': preprint.node.description or '',
         'is_deleted': (
-            not preprint.verified_publishable
-            or preprint.node.tags.filter(name='qatest').exists()
+            not preprint.verified_publishable or
+            preprint.node.tags.filter(name='qatest').exists()
         ),
         # Note: Changing any preprint attribute that is pulled from the node, like title, will NOT bump
         # the preprint's date modified but will bump the node's date_modified.
