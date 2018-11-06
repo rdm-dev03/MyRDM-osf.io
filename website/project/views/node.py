@@ -451,7 +451,7 @@ def view_project(auth, node, **kwargs):
         'zotero': None,
         'forward': None,
         'dataverse': None,
-        'sparql' : None
+        'sparql': None
     }
 
     if 'wiki' in ret['addons']:
