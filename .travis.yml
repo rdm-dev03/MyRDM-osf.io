@@ -153,7 +153,7 @@ script:
     - export COVERAGE=`if [ $(echo "$TRAVIS_BRANCH"|grep -e "feature/") ]; then echo "--coverage"; else echo ""; fi`
     - invoke test_travis_$TEST_BUILD -n 4  $COVERAGE
 after_success:
-    - if [[  $(echo "$TRAVIS_BRANCH"|grep -e "feature/") ]]; then coveralls; fi
+    - coveralls;
 
 before_cache:
   - rm -Rf $HOME/.cache/pip/http
