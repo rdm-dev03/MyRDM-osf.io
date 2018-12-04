@@ -150,7 +150,7 @@ install:
 
 # Run Python tests (core and addon) and JS tests
 script:
-    - export COVERAGE=`if [ $(echo "$TRAVIS_BRANCH"|grep -e "feature/") ]; then echo "--coverage"; else echo ""; fi`
+    - export COVERAGE="--coverage"
     - invoke test_travis_$TEST_BUILD -n 4  $COVERAGE
 after_success:
     - coveralls;
