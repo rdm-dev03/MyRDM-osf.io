@@ -1,0 +1,8 @@
+{
+    "ftp_connect_button_clicked": "An user connected to a FTP server.",
+    "ftp_disconnect_button_clicked": "An user disconnected from a FTP server.",
+    "ftp_download_button_clicked": "An user is downloading file(s) from a FTP server.",
+    "ftp_cancel_button_clicked": "An user cancelled a download from a FTP server.",
+    "ftp_upload_fail": "Request to download from a FTP server by an user failed to save some files to storage.",
+    "ftp_upload_success": "Request to download from a FTP server by an user finished successfully."
+}

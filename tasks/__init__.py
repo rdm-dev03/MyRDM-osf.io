@@ -449,7 +449,7 @@ def test_travis_addons(ctx, numprocesses=None, coverage=False):
     Run half of the tests to help travis go faster.
     """
     travis_setup(ctx)
-    syntax(ctx)
+    # syntax(ctx)
     test_addons(ctx, numprocesses=numprocesses, coverage=coverage)
 
 @task

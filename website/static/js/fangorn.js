@@ -2386,9 +2386,26 @@ function openParentFolders (item) {
  * @param {Object} row A Treebeard _item object.
  * @private
  */
- function _fangornMultiselect (event, row) {
+function _fangornMultiselect (event, row) {
     var tb = this;
     var scrollToItem = false;
+
+    if (tb.options.singleselect) {
+        tb.clearMultiselect();
+        if (!isInvalidDropFolder(row)) {
+            tb.multiselected([row]);
+        } else {
+            $('.tb-row[data-id="' + row.id + '"]').stop()
+                .css('background-color', '#D18C93')
+                .animate(
+                    { backgroundColor: '#fff' }, 500,
+                    function () {
+                        $(this).css('background-color', '');
+                    }
+                );
+        }
+    }
+
     if (tb.toolbarMode() === 'filter') {
         scrollToItem = true;
         // recursively open parents of the selected item but do not lazyload;
@@ -2887,6 +2904,7 @@ tbOptions = {
     lazyLoadPreprocess: waterbutler.wbLazyLoadPreprocess,
     hoverClassMultiselect : 'fangorn-selected',
     multiselect : true,
+    singleselect : false,   // Allow selecting only one item
     placement : 'files',
     title : function() {
         //TODO Add disk saving mode message

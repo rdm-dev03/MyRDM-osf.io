@@ -1,0 +1,5 @@
+{
+    "sparql_runquery": "An user ran a SPARQL query.",
+    "sparql_upload_fail": "Query done by an user failed to save the result to storage.",
+    "sparql_upload_success": "Query done by an user saved the result to storage successfully."
+}

@@ -1,0 +1,6 @@
+{
+    "restfulapi_submit": "${user} submitted a download from a RESTfulAPI.",
+    "restfulapi_cancel": "${user} cancelled a download from a RESTfulAPI.",
+    "restfulapi_upload_fail": "Request to download from a RESTful API server by ${user} failed to save some files to storage.",
+    "restfulapi_upload_success": "Request to download from a RESTful API server by ${user} finished successfully."
+}

@@ -112,6 +112,9 @@ INSTALLED_APPS = (
     'addons.twofactor',
     'addons.wiki',
     'addons.zotero',
+    'addons.sparql',
+    'addons.restfulapi',
+    'addons.ftp',
 )
 
 # local development using https
