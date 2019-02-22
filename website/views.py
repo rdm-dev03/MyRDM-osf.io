@@ -282,6 +282,7 @@ def resolve_guid(guid, suffix=None):
                 url = _build_guid_url(urllib.unquote(file_referent.deep_url))
                 return proxy_url(url)
 
+        # Handle `/addtimestamp` shortcut
         if suffix and suffix.rstrip('/').lower() == 'addtimestamp':
             file_referent = None
             if isinstance(referent, PreprintService) and referent.primary_file:
