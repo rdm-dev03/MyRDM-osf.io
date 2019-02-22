@@ -520,7 +520,7 @@ class AddTimestamp:
                 file_name, self.get_timestamp_request(file_name), key_file_name
             )
         else:
-            tsa_response  =None
+            tsa_response = None
             verify_data.inspection_result_status = api_settings.FILE_NOT_EXISTS
 
         verify_data.key_file_name = key_file_name

@@ -2,6 +2,7 @@ import datetime
 import httplib
 import os
 import uuid
+import requests
 import markupsafe
 import urllib
 from django.utils import timezone
@@ -36,7 +37,7 @@ from addons.base.utils import format_last_known_metadata, get_mfr_url
 from osf.models import (BaseFileNode, TrashedFileNode,
                         OSFUser, AbstractNode,
                         NodeLog, DraftRegistration, RegistrationSchema,
-                        Guid, FileVersionUserMetadata, FileVersion,RdmFileTimestamptokenVerifyResult)
+                        Guid, FileVersionUserMetadata, FileVersion)
 from website.profile.utils import get_profile_image_url
 from website.project import decorators
 from website.project.decorators import must_be_contributor_or_public, must_be_valid_project, check_contributor_auth
@@ -403,10 +404,10 @@ def create_waterbutler_log(payload, **kwargs):
                     dest_path = os.path.dirname(dest_path)
                     src_path = os.path.dirname(src_path)
                 if (
-                    os.path.split(dest_path)[0] == os.path.split(src_path)[0] and
-                    dest['provider'] == src['provider'] and
-                    dest['nid'] == src['nid'] and
-                    dest['name'] != src['name']
+                    os.path.split(dest_path)[0] == os.path.split(src_path)[0]
+                    and dest['provider'] == src['provider']
+                    and dest['nid'] == src['nid']
+                    and dest['name'] != src['name']
                 ):
                     action = LOG_ACTION_MAP['rename']
 

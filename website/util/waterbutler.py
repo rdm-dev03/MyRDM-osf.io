@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 def is_exist(osf_cookie, file_node, download_path, **kwargs):
     try:
         check = requests.get(
-            file_node.generate_waterbutler_url( meta=True, direct=None, **kwargs),
+            file_node.generate_waterbutler_url(meta=True, direct=None, **kwargs),
             cookies={settings.COOKIE_NAME: osf_cookie},
-           stream=True
+            stream=True
         )
         if check.status_code != 200:
             print(check.status_code)
@@ -37,7 +37,7 @@ def download_file(osf_cookie, file_node, download_path, **kwargs):
 
     full_path = os.path.join(download_path, download_filename)
 
-    if not is_exist(osf_cookie,file_node,download_path):
+    if not is_exist(osf_cookie, file_node, download_path):
         return None
 
     response = requests.get(
