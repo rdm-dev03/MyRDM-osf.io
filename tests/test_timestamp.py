@@ -41,13 +41,13 @@ def create_rdmfiletimestamptokenverifyresult(self, filename='test_file_timestamp
     file_node.save()
     ## create tmp_dir
     current_datetime = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
-    current_datetime_str = current_datetime.strftime("%Y%m%d%H%M%S%f")
+    current_datetime_str = current_datetime.strftime('%Y%m%d%H%M%S%f')
     tmp_dir = 'tmp_{}_{}_{}'.format(self.user._id, file_node._id, current_datetime_str)
     os.mkdir(tmp_dir)
     ## create tmp_file (file_node)
     tmp_file = os.path.join(tmp_dir, filename)
-    with open(tmp_file, "wb") as fout:
-        fout.write("filename:{}, provider:{}, inspection_result_status_1(true:1 or false:3):{}".format(filename, provider, inspection_result_status_1))
+    with open(tmp_file, 'wb') as fout:
+        fout.write('filename:{}, provider:{}, inspection_result_status_1(true:1 or false:3):{}'.format(filename, provider, inspection_result_status_1))
     if inspection_result_status_1:
         ## add timestamp
         addTimestamp = AddTimestamp()
