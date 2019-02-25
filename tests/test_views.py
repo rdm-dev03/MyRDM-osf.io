@@ -5283,6 +5283,7 @@ class TestTimestampView(OsfTestCase):
     @mock.patch('requests.get')
     def test_add_timestamp_token(self, mock_get, mock_shutil, mock_collection):
         mock_get.return_value.content = ''
+        mock_get.return_value.status_code = 200
 
         url_timestamp = self.project.url + 'timestamp/'
         res = self.app.get(url_timestamp, auth=self.user.auth)

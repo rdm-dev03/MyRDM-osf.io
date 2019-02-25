@@ -9,22 +9,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def is_exist(osf_cookie, file_node, download_path, **kwargs):
-    try:
-        check = requests.get(
-            file_node.generate_waterbutler_url(meta=True, direct=None, **kwargs),
-            cookies={settings.COOKIE_NAME: osf_cookie},
-            stream=True
-        )
-        if check.status_code != 200:
-            print(check.status_code)
-            return False
-    except Exception as err:
-        logger.error(err)
-        return False
-
-    return True
-
 def download_file(osf_cookie, file_node, download_path, **kwargs):
     '''
     Download an waterbutler file by streaming its contents while saving,
@@ -37,14 +21,19 @@ def download_file(osf_cookie, file_node, download_path, **kwargs):
 
     full_path = os.path.join(download_path, download_filename)
 
-    if not is_exist(osf_cookie, file_node, download_path):
+    file_info = get_node_info(osf_cookie, file_node.target._id, file_node.provider, file_node.path)
+    if file_info is None:
         return None
 
-    response = requests.get(
-        file_node.generate_waterbutler_url(action='download', direct=None, **kwargs),
-        cookies={settings.COOKIE_NAME: osf_cookie},
-        stream=True
-    )
+    try:
+        response = requests.get(
+            file_node.generate_waterbutler_url(action='download', direct=None, **kwargs),
+            cookies={settings.COOKIE_NAME: osf_cookie},
+            stream=True
+        )
+    except Exception as err:
+        logger.error(err)
+        return None
 
     with open(full_path, 'wb') as f:
         shutil.copyfileobj(response.raw, f)
@@ -112,3 +101,22 @@ def upload_file(osf_cookie, pid, file_path, file_name, dest_path):
             }
         )
     return response
+
+def get_node_info(osf_cookie, pid, provider, path):
+    try:
+        response = requests.get(
+            waterbutler_api_url_for(
+                pid, provider, path=path, _internal=True, meta=''
+            ),
+            headers={'content-type': 'application/json'},
+            cookies={'osf': osf_cookie}
+        )
+    except Exception as err:
+        logger.error(err)
+        return None
+
+    content = None
+    if response.status_code == 200:
+        content = response.json()
+    response.close()
+    return content

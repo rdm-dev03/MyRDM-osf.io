@@ -228,11 +228,13 @@ class TestAddonLogs(OsfTestCase):
             'signature': signature,
         }
 
+    @mock.patch('website.util.waterbutler.get_node_info')
     @mock.patch('website.util.waterbutler.download_file')
     @mock.patch('website.notifications.events.files.FileAdded.perform')
     @mock.patch('requests.get',{'code': 404, 'referrer': None,'message_short': 'Page not found'})
-    def test_add_log_timestamptoken(self, mock_perform, mock_downloadfile):
+    def test_add_log_timestamptoken(self, mock_perform, mock_downloadfile, mock_nodeinfo):
         mock_downloadfile.return_value = '/testfile'
+        mock_nodeinfo.return_value = {}
         result_list1_count = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id).count()
         nodelog_count1 = NodeLog.objects.all().count()
         path = 'pizza'
@@ -395,6 +397,401 @@ class TestAddonLogs(OsfTestCase):
             self.node.logs.latest().action,
             'github_addon_file_renamed',
         )
+
+    @mock.patch('requests.get')
+    @mock.patch('website.util.waterbutler.download_file')
+    @mock.patch('website.notifications.events.files.FileAdded.perform')
+    def test_action_file_rename_timestamp(self, mock_perform, mock_downloadfile, mock_get):
+        mock_downloadfile.return_value = '/file_ver1'
+        mock_get.return_value.status_code = 200
+        wb_log_url = self.node.api_url_for('create_waterbutler_log')
+
+        # Create file
+        filename = 'file_ver1'
+        file_node = create_test_file(node=self.node, user=self.user, filename=filename)
+        file_node._path = '/' + filename
+        file_node.save()
+        self.app.put_json(wb_log_url, self.build_payload(metadata={
+            'provider': 'osfstorage',
+            'name': filename,
+            'materialized': '/' + filename,
+            'path': '/' + filename,
+            'kind': 'file',
+            'size': 2345,
+            'created_utc': '',
+            'modified_utc': '',
+            'extra': {
+                'version': '1'
+            }
+        }), headers={'Content-Type': 'application/json'})
+        files_query = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id)
+        assert_equal(1, files_query.count())
+        created_file = files_query.get()
+        assert_equal('/' + filename, created_file.path)
+
+        # Rename the file
+        newfilename = 'file_ver2'
+        self.app.put_json(wb_log_url, self.build_payload(
+            action='rename',
+            metadata={
+                'path': '/' + newfilename,
+            },
+            source={
+                'provider': 'osfstorage',
+                'name': filename,
+                'materialized': '/' + filename,
+                'path': '/' + filename,
+                'node': {'_id': self.node._id},
+                'kind': 'file',
+            },
+            destination={
+                'provider': 'osfstorage',
+                'name': newfilename,
+                'materialized': '/' + newfilename,
+                'path': '/' + newfilename,
+                'node': {'_id': self.node._id},
+                'kind': 'file',
+            },
+        ), headers={'Content-Type': 'application/json'})
+        files_query = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id)
+        assert_equal(1, files_query.count())
+        renamed_file = files_query.get()
+        assert_equal('/' + newfilename, renamed_file.path)
+
+    @mock.patch('requests.get')
+    @mock.patch('website.util.waterbutler.download_file')
+    @mock.patch('website.notifications.events.files.FileAdded.perform')
+    def test_action_folder_rename_timestamp(self, mock_perform, mock_downloadfile, mock_get):
+        mock_downloadfile.return_value = '/folder_ver1/my_precious_file'
+        mock_get.return_value.status_code = 200
+        wb_log_url = self.node.api_url_for('create_waterbutler_log')
+
+        # Create file inside folder
+        foldername = 'folder_ver1'
+        filename = 'my_precious_file'
+        filepath = '/{}/{}'.format(foldername, filename)
+
+        file_node = create_test_file(node=self.node, user=self.user, filename=filename)
+        file_node._path = '/' + filename
+        file_node.save()
+        self.app.put_json(wb_log_url, self.build_payload(metadata={
+            'provider': 'osfstorage',
+            'name': filename,
+            'materialized': filepath,
+            'path': filepath,
+            'kind': 'file',
+            'size': 2345,
+            'created_utc': '',
+            'modified_utc': '',
+            'extra': {
+                'version': '1'
+            }
+        }), headers={'Content-Type': 'application/json'})
+        files_query = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id)
+        assert_equal(1, files_query.count())
+        created_file = files_query.get()
+        assert_equal(filepath, created_file.path)
+
+        # Rename the folder
+        newfoldername = 'folder_ver2'
+        self.app.put_json(wb_log_url, self.build_payload(
+            action='rename',
+            metadata={
+                'path': '/' + newfoldername,
+            },
+            source={
+                'provider': 'osfstorage',
+                'name': foldername,
+                'materialized': '/' + foldername,
+                'path': '/' + foldername,
+                'node': {'_id': self.node._id},
+                'kind': 'folder',
+            },
+            destination={
+                'provider': 'osfstorage',
+                'name': newfoldername,
+                'materialized': '/' + newfoldername,
+                'path': '/' + newfoldername,
+                'node': {'_id': self.node._id},
+                'kind': 'folder',
+            },
+        ), headers={'Content-Type': 'application/json'})
+        files_query = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id)
+        assert_equal(1, files_query.count())
+        renamed_file = files_query.get()
+        filepath = '/{}/{}'.format(newfoldername, filename)
+        assert_equal(filepath, renamed_file.path)
+
+    @mock.patch('requests.get')
+    @mock.patch('website.util.waterbutler.download_file')
+    @mock.patch('website.notifications.events.files.FileAdded.perform')
+    def test_action_file_move_timestamp(self, mock_perform, mock_downloadfile, mock_get):
+        mock_downloadfile.return_value = '/file_ver1'
+        mock_get.return_value.status_code = 200
+        wb_log_url = self.node.api_url_for('create_waterbutler_log')
+
+        # Create file
+        filename = 'file_ver1'
+        file_node = create_test_file(node=self.node, user=self.user, filename=filename)
+        file_node._path = '/' + filename
+        file_node.save()
+        self.app.put_json(wb_log_url, self.build_payload(metadata={
+            'provider': 'osfstorage',
+            'name': filename,
+            'materialized': '/' + filename,
+            'path': '/' + filename,
+            'kind': 'file',
+            'size': 2345,
+            'created_utc': '',
+            'modified_utc': '',
+            'extra': {
+                'version': '1'
+            }
+        }), headers={'Content-Type': 'application/json'})
+        files_query = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id)
+        assert_equal(1, files_query.count())
+        created_file = files_query.get()
+        assert_equal('/' + filename, created_file.path)
+
+        # Move the file
+        movedfilepath = 'cool_folder/' + filename
+        self.app.put_json(wb_log_url, self.build_payload(
+            action='move',
+            metadata={
+                'path': '/' + movedfilepath,
+            },
+            source={
+                'provider': 'osfstorage',
+                'name': filename,
+                'materialized': '/' + filename,
+                'path': '/' + filename,
+                'node': {'_id': self.node._id},
+                'kind': 'file',
+                'nid': self.node._id,
+            },
+            destination={
+                'provider': 'osfstorage',
+                'name': filename,
+                'materialized': '/' + movedfilepath,
+                'path': '/' + movedfilepath,
+                'node': {'_id': self.node._id},
+                'kind': 'file',
+                'nid': self.node._id,
+            },
+        ), headers={'Content-Type': 'application/json'})
+        files_query = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id)
+        assert_equal(1, files_query.count())
+        renamed_file = files_query.get()
+        assert_equal('/' + movedfilepath, renamed_file.path)
+
+    @mock.patch('requests.get')
+    @mock.patch('website.util.waterbutler.download_file')
+    @mock.patch('website.notifications.events.files.FileAdded.perform')
+    def test_action_folder_move_timestamp(self, mock_perform, mock_downloadfile, mock_get):
+        mock_downloadfile.return_value = '/file_ver1'
+        mock_get.return_value.status_code = 200
+        wb_log_url = self.node.api_url_for('create_waterbutler_log')
+
+        # Create file
+        foldername = 'nice_folder'
+        folderpath = foldername + '/'
+        filename = 'file_ver1'
+        file_node = create_test_file(node=self.node, user=self.user, filename=filename)
+        file_node._path = '/' + folderpath + filename
+        file_node.save()
+        self.app.put_json(wb_log_url, self.build_payload(metadata={
+            'provider': 'osfstorage',
+            'name': filename,
+            'materialized': '/' + folderpath + filename,
+            'path': '/' + folderpath + filename,
+            'kind': 'file',
+            'size': 2345,
+            'created_utc': '',
+            'modified_utc': '',
+            'extra': {
+                'version': '1'
+            }
+        }), headers={'Content-Type': 'application/json'})
+        files_query = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id)
+        assert_equal(1, files_query.count())
+        created_file = files_query.get()
+        assert_equal('/' + folderpath + filename, created_file.path)
+
+        # Move the folder
+        movedfolderpath = 'trash_bin/{}/'.format(foldername)
+        self.app.put_json(wb_log_url, self.build_payload(
+            action='move',
+            metadata={
+                'path': '/' + movedfolderpath,
+            },
+            source={
+                'provider': 'osfstorage',
+                'name': foldername,
+                'materialized': '/' + folderpath,
+                'path': '/' + folderpath,
+                'node': {'_id': self.node._id},
+                'kind': 'folder',
+                'nid': self.node._id,
+            },
+            destination={
+                'provider': 'osfstorage',
+                'name': foldername,
+                'materialized': '/' + movedfolderpath,
+                'path': '/' + movedfolderpath,
+                'node': {'_id': self.node._id},
+                'kind': 'folder',
+                'nid': self.node._id,
+            },
+        ), headers={'Content-Type': 'application/json'})
+        files_query = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id)
+        assert_equal(1, files_query.count())
+        renamed_file = files_query.get()
+        assert_equal('/' + movedfolderpath + filename, renamed_file.path)
+
+    @mock.patch('requests.get')
+    @mock.patch('website.util.waterbutler.download_file')
+    @mock.patch('website.notifications.events.files.FileAdded.perform')
+    def test_action_file_remove_timestamp(self, mock_perform, mock_downloadfile, mock_get):
+        mock_downloadfile.return_value = '/file_ver1'
+        mock_get.return_value.status_code = 200
+        wb_log_url = self.node.api_url_for('create_waterbutler_log')
+
+        # Create file
+        filename = 'file_ver1'
+        file_node = create_test_file(node=self.node, user=self.user, filename=filename)
+        file_node._path = '/' + filename
+        file_node.save()
+        self.app.put_json(wb_log_url, self.build_payload(metadata={
+            'provider': 'osfstorage',
+            'name': filename,
+            'materialized': '/' + filename,
+            'path': '/' + filename,
+            'kind': 'file',
+            'size': 2345,
+            'created_utc': '',
+            'modified_utc': '',
+            'extra': {
+                'version': '1'
+            }
+        }), headers={'Content-Type': 'application/json'})
+        files_query = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id)
+        assert_equal(1, files_query.count())
+        created_file = files_query.get()
+        assert_equal('/' + filename, created_file.path)
+
+        # Delete the file
+        self.app.put_json(wb_log_url, self.build_payload(
+            action='delete',
+            metadata={
+                'provider': 'osfstorage',
+                'name': filename,
+                'materialized': '/' + filename,
+                'path': '/' + filename,
+                'kind': 'file',
+                'nid': self.node._id,
+                'extra': {
+                    'version': '1'
+                }
+            },
+        ), headers={'Content-Type': 'application/json'})
+        files_query = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id)
+        assert_equal(1, files_query.count())
+        removed_file = files_query.get()
+        assert_equal(api_settings.FILE_NOT_EXISTS, removed_file.inspection_result_status)
+
+    @mock.patch('requests.get')
+    @mock.patch('website.util.waterbutler.download_file')
+    @mock.patch('website.notifications.events.files.FileAdded.perform')
+    def test_action_folder_remove_timestamp(self, mock_perform, mock_downloadfile, mock_get):
+        mock_downloadfile.return_value = '/file_ver1'
+        mock_get.return_value.status_code = 200
+        wb_log_url = self.node.api_url_for('create_waterbutler_log')
+
+        # Create file
+        foldername = 'nice_folder'
+        folderpath = foldername + '/'
+        filename = 'file_ver1'
+        file_node = create_test_file(node=self.node, user=self.user, filename=filename)
+        file_node._path = '/' + folderpath + filename
+        file_node.save()
+        self.app.put_json(wb_log_url, self.build_payload(metadata={
+            'provider': 'osfstorage',
+            'name': filename,
+            'materialized': '/' + folderpath + filename,
+            'path': '/' + folderpath + filename,
+            'kind': 'file',
+            'size': 2345,
+            'created_utc': '',
+            'modified_utc': '',
+            'extra': {
+                'version': '1'
+            }
+        }), headers={'Content-Type': 'application/json'})
+        files_query = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id)
+        assert_equal(1, files_query.count())
+        created_file = files_query.get()
+        assert_equal('/' + folderpath + filename, created_file.path)
+
+        # Remove the folder
+        movedfolderpath = 'trash_bin/{}/'.format(foldername)
+        self.app.put_json(wb_log_url, self.build_payload(
+            action='delete',
+            metadata={
+                'provider': 'osfstorage',
+                'name': foldername,
+                'materialized': '/' + folderpath,
+                'path': '/' + folderpath,
+                'kind': 'folder',
+                'nid': self.node._id,
+                'extra': {
+                    'version': '1'
+                }
+            },
+        ), headers={'Content-Type': 'application/json'})
+        files_query = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id)
+        assert_equal(1, files_query.count())
+        removed_file = files_query.get()
+        assert_equal(api_settings.FILE_NOT_EXISTS, removed_file.inspection_result_status)
+
+    @mock.patch('requests.get')
+    @mock.patch('website.util.waterbutler.download_file')
+    @mock.patch('website.notifications.events.files.FileAdded.perform')
+    def test_disconnect_provider_timestamp(self, mock_perform, mock_downloadfile, mock_get):
+        mock_downloadfile.return_value = '/file_ver1'
+        mock_get.return_value.status_code = 200
+        wb_log_url = self.node.api_url_for('create_waterbutler_log')
+
+        # Create file
+        filename = 'file_ver1'
+        file_node = create_test_file(node=self.node, user=self.user, filename=filename)
+        file_node._path = '/' + filename
+        file_node.save()
+        self.app.put_json(wb_log_url, self.build_payload(metadata={
+            'provider': 'github',
+            'name': filename,
+            'materialized': '/' + filename,
+            'path': '/' + filename,
+            'kind': 'file',
+            'size': 2345,
+            'created_utc': '',
+            'modified_utc': '',
+            'extra': {
+                'version': '1'
+            }
+        }), headers={'Content-Type': 'application/json'})
+        files_query = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id)
+        assert_equal(1, files_query.count())
+        created_file = files_query.get()
+        assert_equal('/' + filename, created_file.path)
+
+        # Disable addon
+        self.node.delete_addon('github', Auth(self.user))
+        self.node.save()
+
+        files_query = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id)
+        assert_equal(1, files_query.count())
+        removed_file = files_query.get()
+        assert_equal(api_settings.TIME_STAMP_STORAGE_DISCONNECTED, removed_file.inspection_result_status)
 
     def test_action_downloads_contrib(self):
         url = self.node.api_url_for('create_waterbutler_log')

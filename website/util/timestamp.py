@@ -38,7 +38,13 @@ RESULT_MESSAGE = {
     api_settings.TIME_STAMP_TOKEN_CHECK_FILE_NOT_FOUND:
         api_settings.TIME_STAMP_TOKEN_CHECK_FILE_NOT_FOUND_MSG,  # 'TST missing(Unverify)'
     api_settings.FILE_NOT_EXISTS:
-        api_settings.FILE_NOT_EXISTS_MSG  # 'FILE missing'
+        api_settings.FILE_NOT_EXISTS_MSG,  # 'FILE missing'
+    api_settings.TIME_STAMP_VERIFICATION_ERR:
+        api_settings.TIME_STAMP_VERIFICATION_ERR_MSG,
+    api_settings.TIME_STAMP_STORAGE_DISCONNECTED:
+        api_settings.TIME_STAMP_STORAGE_DISCONNECTED_MSG,
+    api_settings.TIME_STAMP_STORAGE_NOT_ACCESSIBLE:
+        api_settings.TIME_STAMP_STORAGE_NOT_ACCESSIBLE_MSG
 }
 
 def get_error_list(pid):
@@ -65,7 +71,7 @@ def get_error_list(pid):
             verify_result_title = RESULT_MESSAGE[data.inspection_result_status]
         else:  # 'FILE missing(Unverify)'
             verify_result_title = \
-                api_settings.FILE_NOT_EXISTS_TIME_STAMP_TOKEN_CHECK_FILE_NOT_FOUND_MSG
+                verify_result_title = api_settings.FILE_NOT_FOUND_MSG
 
         # User and date of the verification
         verify_user = OSFUser.objects.get(id=data.verify_user)
@@ -162,16 +168,19 @@ def get_full_list(uid, pid, node):
     provider_list = []
 
     for provider_data in provider_json_res['data']:
-        waterbutler_meta_url = waterbutler_api_url_for(
-            pid,
-            provider_data['attributes']['provider'],
-            '/',
-            meta=int(time.mktime(datetime.datetime.now().timetuple()))
-        )
-        waterbutler_json_res = None
-        waterbutler_res = requests.get(waterbutler_meta_url, headers=headers, cookies=cookies)
-        waterbutler_json_res = waterbutler_res.json()
-        waterbutler_res.close()
+        provider = provider_data['attributes']['provider']
+        waterbutler_json_res = waterbutler.get_node_info(cookie, pid, provider, '/')
+
+        if waterbutler_json_res is None:
+            provider_files = RdmFileTimestamptokenVerifyResult.objects.filter(
+                project_id=node._id,
+                provider=provider
+            )
+            files_status = provider_files.first().inspection_result_status
+            if files_status != api_settings.TIME_STAMP_STORAGE_DISCONNECTED:
+                not_accessible_status = api_settings.TIME_STAMP_STORAGE_NOT_ACCESSIBLE
+                provider_files.update(inspection_result_status=not_accessible_status)
+            continue
 
         file_list = []
         child_file_list = []
@@ -227,46 +236,57 @@ def check_file_timestamp(uid, node, data):
     tmp_dir = None
     result = None
 
-    try:
-        file_node = BaseFileNode.objects.get(_id=data['file_id'])
-        current_datetime = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
-        current_datetime_str = current_datetime.strftime('%Y%m%d%H%M%S%f')
-        tmp_dir = 'tmp_{}_{}_{}'.format(user._id, file_node._id, current_datetime_str)
+    file_node = BaseFileNode.objects.get(_id=data['file_id'])
+    current_datetime = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
+    current_datetime_str = current_datetime.strftime('%Y%m%d%H%M%S%f')
+    tmp_dir = 'tmp_{}_{}_{}'.format(user._id, file_node._id, current_datetime_str)
 
-        if not os.path.exists(tmp_dir):
-            os.mkdir(tmp_dir)
+    if not os.path.exists(tmp_dir):
+        os.mkdir(tmp_dir)
+    download_file_path = waterbutler.download_file(cookie, file_node, tmp_dir)
 
-        download_file_path = waterbutler.download_file(cookie, file_node, tmp_dir)
+    if download_file_path is None:
+        intentional_remove_status = [
+            api_settings.FILE_NOT_EXISTS,
+            api_settings.TIME_STAMP_STORAGE_DISCONNECTED
+        ]
+        file_data = RdmFileTimestamptokenVerifyResult.objects.filter(file_id=data['file_id'])
+        if file_data.exists() and \
+                file_data.get().inspection_result_status not in intentional_remove_status:
+            file_data.update(inspection_result_status=api_settings.FILE_NOT_FOUND)
+        return False
+    if not userkey_generation_check(user._id):
+        userkey_generation(user._id)
 
-        if not userkey_generation_check(user._id):
-            userkey_generation(user._id)
-
-        verify_check = TimeStampTokenVerifyCheck()
-        result = verify_check.timestamp_check(
-            user._id, data, node._id, download_file_path, tmp_dir
-        )
-
-        shutil.rmtree(tmp_dir)
-        return result
-
-    except Exception as err:
-        if tmp_dir and os.path.exists(tmp_dir):
-            shutil.rmtree(tmp_dir)
-        logger.exception(err)
-        raise
+    verify_check = TimeStampTokenVerifyCheck()
+    result = verify_check.timestamp_check(
+        user._id, data, node._id, download_file_path, tmp_dir)
+    shutil.rmtree(tmp_dir)
+    return result
 
 def add_token(uid, node, data):
     user = OSFUser.objects.get(id=uid)
     cookie = user.get_or_create_cookie()
     tmp_dir = None
 
-    try:
-        file_node = BaseFileNode.objects.get(_id=data['file_id'])
-    except Exception as err:
-        file_node = BaseFileNode.resolve_class(
-            data['provider'], BaseFileNode.FILE).get_or_create(node, data['file_path_origin'])
-        file_node.save()
-        data['file_id'] = file_node._id
+    file_node = BaseFileNode.resolve_class(
+        data['provider'], BaseFileNode.FILE).get_or_create(node, data['file_path'])
+    file_node.save()
+    data['file_id'] = file_node._id
+
+    # Check access to provider
+    root_file_nodes = waterbutler.get_node_info(cookie, node._id, data['provider'], '/')
+    if root_file_nodes is None:
+        provider_files = RdmFileTimestamptokenVerifyResult.objects.filter(
+            project_id=node._id,
+            provider=data['provider']
+        )
+        files_status = provider_files.first().inspection_result_status
+        if files_status != api_settings.TIME_STAMP_STORAGE_DISCONNECTED:
+            not_accessible_status = api_settings.TIME_STAMP_STORAGE_NOT_ACCESSIBLE
+            provider_files.update(inspection_result_status=not_accessible_status)
+        return None
+
     try:
         # Request To Download File
         tmp_dir = 'tmp_{}'.format(user._id)
@@ -276,6 +296,17 @@ def add_token(uid, node, data):
             tmp_dir = 'tmp_{}_{}'.format(user._id, count)
         os.mkdir(tmp_dir)
         download_file_path = waterbutler.download_file(cookie, file_node, tmp_dir)
+
+        if download_file_path is None:
+            intentional_remove_status = [
+                api_settings.FILE_NOT_EXISTS,
+                api_settings.TIME_STAMP_STORAGE_DISCONNECTED
+            ]
+            file_data = RdmFileTimestamptokenVerifyResult.objects.filter(file_id=data['file_id'])
+            if file_data.exists() and \
+                    file_data.get().inspection_result_status not in intentional_remove_status:
+                file_data.update(inspection_result_status=api_settings.defaults.FILE_NOT_FOUND)
+            return None
         if not userkey_generation_check(user._id):
             userkey_generation(user._id)
 
@@ -293,30 +324,29 @@ def add_token(uid, node, data):
         logger.exception(err)
         raise
 
-def file_created_or_updated(node, payload, user_id, created_flag):
+def file_created_or_updated(node, metadata, user_id, created_flag):
     file_node = BaseFileNode.resolve_class(
-        payload['metadata']['provider'], BaseFileNode.FILE
-    ).get_or_create(node, payload['metadata'].get('path'))
+        metadata['provider'], BaseFileNode.FILE
+    ).get_or_create(node, metadata.get('materialized'))
     file_node.save()
-    created_at = payload['metadata'].get('created_utc')
-    modified_at = payload['metadata'].get('modified_utc')
+    created_at = metadata.get('created_utc')
+    modified_at = metadata.get('modified_utc')
     version = ''
     if not created_at:
         created_at = None
     if not modified_at:
         modified_at = None
-    if payload['metadata']['provider'] == 'osf_storage':
-        version = payload['metadata']['extra'].get('version')
+    if metadata['provider'] == 'osf_storage':
+        version = metadata['extra'].get('version')
     file_info = {
         'file_id': file_node._id,
-        'file_name': payload['metadata'].get('name'),
-        'file_path': payload['metadata'].get('materialized'),
-        'file_path_origin': payload['metadata'].get('path'),
-        'size': payload['metadata'].get('size'),
+        'file_name': metadata.get('name'),
+        'file_path': metadata.get('materialized'),
+        'size': metadata.get('size'),
         'created': created_at,
         'modified': modified_at,
         'version': version,
-        'provider': payload['metadata'].get('provider')
+        'provider': metadata.get('provider')
     }
     add_token(user_id, node, file_info)
 
@@ -332,6 +362,31 @@ def file_created_or_updated(node, payload, user_id, created_flag):
         verify_data.upload_file_modified_at = file_info['modified']
         verify_data.upload_file_size = file_info['size']
         verify_data.save()
+
+def file_node_moved(project_id, provider, src_path, dest_path):
+    src_path = src_path if src_path[0] == '/' else '/' + src_path
+    dest_path = dest_path if dest_path[0] == '/' else '/' + dest_path
+
+    moved_files = RdmFileTimestamptokenVerifyResult.objects.filter(
+        path__startswith=src_path,
+        project_id=project_id,
+        provider=provider
+    ).all()
+    for moved_file in moved_files:
+        moved_file.path = moved_file.path.replace(src_path, dest_path, 1)
+        moved_file.save()
+
+def file_node_deleted(project_id, addon_name, src_path):
+    src_path = src_path if src_path[0] == '/' else '/' + src_path
+
+    tst_status = api_settings.FILE_NOT_EXISTS
+    if src_path == '/':
+        tst_status = api_settings.TIME_STAMP_STORAGE_DISCONNECTED
+    RdmFileTimestamptokenVerifyResult.objects.filter(
+        project_id=project_id,
+        provider=addon_name,
+        path__startswith=src_path
+    ).update(inspection_result_status=tst_status)
 
 def waterbutler_folder_file_info(pid, provider, path, node, cookies, headers):
     # get waterbutler folder file
@@ -624,17 +679,17 @@ class TimeStampTokenVerifyCheck:
                     # if file does not exist ,and verify result does not exist in db:
                     # update verifyResult 'FILE missing(Unverify)'
                     verify_result.inspection_result_status = \
-                        api_settings.FILE_NOT_EXISTS_TIME_STAMP_TOKEN_CHECK_FILE_NOT_FOUND
-                    ret = api_settings.FILE_NOT_EXISTS_TIME_STAMP_TOKEN_CHECK_FILE_NOT_FOUND
+                        api_settings.FILE_NOT_FOUND
+                    ret = api_settings.FILE_NOT_FOUND
                     verify_result_title = \
-                        api_settings.FILE_NOT_EXISTS_TIME_STAMP_TOKEN_CHECK_FILE_NOT_FOUND_MSG
+                        api_settings.FILE_NOT_FOUND_MSG
 
                 elif baseFileNode.is_deleted and verify_result:
                     # if file was deleted, and verify result exists in db:
                     # update verifyResult 'FILE missing(Unverify)'
                     verify_result.inspection_result_status = \
-                        api_settings.FILE_NOT_EXISTS_TIME_STAMP_TOKEN_CHECK_FILE_NOT_FOUND
-                    ret = api_settings.FILE_NOT_EXISTS_TIME_STAMP_TOKEN_CHECK_FILE_NOT_FOUND_MSG
+                        api_settings.FILE_NOT_FOUND
+                    ret = api_settings.FILE_NOT_FOUND_MSG
 
                 elif not baseFileNode.is_deleted and not verify_result:
                     # if file was deleted, and verify result does not exist in db:

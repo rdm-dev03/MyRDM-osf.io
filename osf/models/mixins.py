@@ -318,6 +318,7 @@ class AddonModelMixin(models.Model):
             self.save()
 
     def delete_addon(self, addon_name, auth=None, _force=False):
+        from website.util import timestamp
         """Delete an add-on from the node.
 
         :param str addon_name: Name of add-on
@@ -335,6 +336,7 @@ class AddonModelMixin(models.Model):
         if getattr(addon, 'external_account', None):
             addon.deauthorize(auth=auth)
         addon.delete(save=True)
+        timestamp.file_node_deleted(self._id, addon_name, '/')
         return True
 
     def _settings_model(self, addon_model, config=None):

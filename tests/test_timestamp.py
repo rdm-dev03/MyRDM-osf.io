@@ -1,4 +1,5 @@
 import datetime
+import mock
 import os
 import pytz
 import shutil
@@ -9,6 +10,7 @@ from nose import tools as nt
 from osf.models import RdmUserKey, RdmFileTimestamptokenVerifyResult, Guid
 from osf_tests.factories import ProjectFactory, AuthUserFactory
 from tests.base import ApiTestCase, OsfTestCase
+from website.util import timestamp
 from website.util.timestamp import (
     AddTimestamp, TimeStampTokenVerifyCheck,
     userkey_generation, userkey_generation_check
@@ -182,6 +184,116 @@ class TestTimeStampTokenVerifyCheck(ApiTestCase):
         os.remove(pub_key_path)
         rdmuserkey_pub_key.delete()
 
+    @mock.patch('requests.get')
+    @mock.patch('website.util.waterbutler.requests', side_effect=Exception('Test'))
+    def test_get_full_list_file_ok_storage_unaccessible(self, mock_requests, mock_get):
+        mock_get.return_value.json.return_value = {
+            'data': [
+                {'attributes': {'provider': 'github'}}
+            ]
+        }
+
+        # Create new TS and assert it has status OK
+        create_rdmfiletimestamptokenverifyresult(self, 'githubfile.txt', 'github')
+        tsresult_list = RdmFileTimestamptokenVerifyResult.objects.filter(
+            project_id=self.node._id).all()
+        nt.assert_equal(len(tsresult_list), 1)
+        nt.assert_equal(tsresult_list[0].inspection_result_status, api_settings.TIME_STAMP_TOKEN_CHECK_SUCCESS)
+
+        # Mock makes the request to WB throw an exception, meaning storage is unaccessible
+        timestamp.get_full_list(self.user.id, self.node._id, self.node)
+        nt.assert_equal(mock_requests.get.called, 1)
+
+        # TS entry must be updated
+        tsresult_list = RdmFileTimestamptokenVerifyResult.objects.filter(
+            project_id=self.node._id).all()
+        nt.assert_equal(len(tsresult_list), 1)
+        nt.assert_equal(tsresult_list[0].inspection_result_status, api_settings.TIME_STAMP_STORAGE_NOT_ACCESSIBLE)
+
+    @mock.patch('requests.get')
+    @mock.patch('website.util.waterbutler.requests', side_effect=Exception('Test'))
+    def test_get_full_list_disconnected_storage_unaccessible(self, mock_requests, mock_get):
+        mock_get.return_value.json.return_value = {
+            'data': [
+                {'attributes': {'provider': 'github'}}
+            ]
+        }
+
+        # Create new TS and assert it has status STORAGE_DISCONNECTED
+        create_rdmfiletimestamptokenverifyresult(self, 'githubfile.txt', 'github')
+        tsresult = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id)
+        nt.assert_equal(tsresult.count(), 1)
+        tsresult.update(inspection_result_status=api_settings.TIME_STAMP_STORAGE_DISCONNECTED)
+
+        # Mock makes the request to WB throw an exception, meaning storage is unaccessible
+        timestamp.get_full_list(self.user.id, self.node._id, self.node)
+        nt.assert_equal(mock_requests.get.called, 1)
+
+        # TS entry must NOT be updated
+        tsresult_list = RdmFileTimestamptokenVerifyResult.objects.filter(
+            project_id=self.node._id).all()
+        nt.assert_equal(len(tsresult_list), 1)
+        nt.assert_equal(tsresult_list[0].inspection_result_status, api_settings.TIME_STAMP_STORAGE_DISCONNECTED)
+
+    @mock.patch('requests.get')
+    @mock.patch('website.util.waterbutler.requests', side_effect=Exception('Test'))
+    def test_add_token_list_file_unchecked_storage_unaccessible(self, mock_requests, mock_get):
+        mock_get.return_value.json.return_value = {
+            'data': [
+                {'attributes': {'provider': 'github'}}
+            ]
+        }
+
+        # Create new TS and assert it has status NG
+        create_rdmfiletimestamptokenverifyresult(self, 'githubfile.txt', 'github', False)
+        tsresult_list = RdmFileTimestamptokenVerifyResult.objects.filter(
+            project_id=self.node._id).all()
+        nt.assert_equal(len(tsresult_list), 1)
+        nt.assert_equal(tsresult_list[0].inspection_result_status, api_settings.TIME_STAMP_TOKEN_CHECK_FILE_NOT_FOUND)
+
+        # Mock makes the request to WB throw an exception, meaning storage is unaccessible
+        data = {
+            'provider': 'github',
+            'file_path': '/githubfile.txt'
+        }
+        timestamp.add_token(self.user.id, self.node, data)
+        nt.assert_equal(mock_requests.get.called, 1)
+
+        # TS entry must be updated
+        tsresult_list = RdmFileTimestamptokenVerifyResult.objects.filter(
+            project_id=self.node._id).all()
+        nt.assert_equal(len(tsresult_list), 1)
+        nt.assert_equal(tsresult_list[0].inspection_result_status, api_settings.TIME_STAMP_STORAGE_NOT_ACCESSIBLE)
+
+    @mock.patch('requests.get')
+    @mock.patch('website.util.waterbutler.requests', side_effect=Exception('Test'))
+    def test_add_token_list_disconnected_storage_unaccessible(self, mock_requests, mock_get):
+        mock_get.return_value.json.return_value = {
+            'data': [
+                {'attributes': {'provider': 'github'}}
+            ]
+        }
+
+        # Create new TS and assert it has status STORAGE_DISCONNECTED
+        create_rdmfiletimestamptokenverifyresult(self, 'githubfile.txt', 'github', False)
+        tsresult = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id)
+        nt.assert_equal(tsresult.count(), 1)
+        tsresult.update(inspection_result_status=api_settings.TIME_STAMP_STORAGE_DISCONNECTED)
+
+        # Mock makes the request to WB throw an exception, meaning storage is unaccessible
+        data = {
+            'provider': 'github',
+            'file_path': '/githubfile.txt'
+        }
+        timestamp.add_token(self.user.id, self.node, data)
+        nt.assert_equal(mock_requests.get.called, 1)
+
+        # TS entry must NOT be updated
+        tsresult_list = RdmFileTimestamptokenVerifyResult.objects.filter(
+            project_id=self.node._id).all()
+        nt.assert_equal(len(tsresult_list), 1)
+        nt.assert_equal(tsresult_list[0].inspection_result_status, api_settings.TIME_STAMP_STORAGE_DISCONNECTED)
+
     def test_timestamp_check_return_status_1(self):
         """
         TIME_STAMP_TOKEN_CHECK_SUCCESS = 1
@@ -306,8 +418,8 @@ class TestTimeStampTokenVerifyCheck(ApiTestCase):
         shutil.rmtree(tmp_dir)
 
         ## check timestamp_check func response
-        nt.assert_equal(ret['verify_result'], 2)
-        nt.assert_equal(ret['verify_result_title'], 'NG')
+        nt.assert_equal(ret['verify_result'], api_settings.TIME_STAMP_TOKEN_CHECK_NG)
+        nt.assert_equal(ret['verify_result_title'], api_settings.TIME_STAMP_TOKEN_CHECK_NG_MSG)
 
         ## check rdmfiletimestamptokenverifyresult record
         rdmfiletimestamptokenverifyresult = RdmFileTimestamptokenVerifyResult.objects.get(file_id=file_node._id)
@@ -359,8 +471,8 @@ class TestTimeStampTokenVerifyCheck(ApiTestCase):
         shutil.rmtree(tmp_dir)
 
         ## check timestamp_check func response
-        nt.assert_equal(ret['verify_result'], 3)
-        nt.assert_equal(ret['verify_result_title'], 'TST missing(Unverify)')
+        nt.assert_equal(ret['verify_result'], api_settings.TIME_STAMP_TOKEN_CHECK_FILE_NOT_FOUND)
+        nt.assert_equal(ret['verify_result_title'], api_settings.TIME_STAMP_TOKEN_CHECK_FILE_NOT_FOUND_MSG)
 
         ## check rdmfiletimestamptokenverifyresult record
         rdmfiletimestamptokenverifyresult = RdmFileTimestamptokenVerifyResult.objects.get(file_id=file_node._id)
@@ -412,8 +524,8 @@ class TestTimeStampTokenVerifyCheck(ApiTestCase):
         shutil.rmtree(tmp_dir)
 
         ## check timestamp_check func response
-        nt.assert_equal(ret['verify_result'], 4)
-        nt.assert_equal(ret['verify_result_title'], 'TST missing(Retrieving Failed)')
+        nt.assert_equal(ret['verify_result'], api_settings.TIME_STAMP_TOKEN_NO_DATA)
+        nt.assert_equal(ret['verify_result_title'], api_settings.TIME_STAMP_TOKEN_NO_DATA_MSG)
 
         ## check rdmfiletimestamptokenverifyresult record
         rdmfiletimestamptokenverifyresult = RdmFileTimestamptokenVerifyResult.objects.get(file_id=file_node._id)
@@ -464,8 +576,8 @@ class TestTimeStampTokenVerifyCheck(ApiTestCase):
         shutil.rmtree(tmp_dir)
 
         ## check timestamp_check func response
-        nt.assert_equal(ret['verify_result'], 5)
-        nt.assert_equal(ret['verify_result_title'], 'FILE missing')
+        nt.assert_equal(ret['verify_result'], api_settings.FILE_NOT_EXISTS)
+        nt.assert_equal(ret['verify_result_title'], api_settings.FILE_NOT_EXISTS_MSG)
 
         ## check rdmfiletimestamptokenverifyresult record
         rdmfiletimestamptokenverifyresult = RdmFileTimestamptokenVerifyResult.objects.get(file_id=file_node._id)
@@ -480,8 +592,8 @@ class TestTimeStampTokenVerifyCheck(ApiTestCase):
          RdmFileTimestamptokenVerifyResult : Exist & RdmFileTimestamptokenVerifyResult.timestamp_token = null
          provider = 'osfstorage'
         [OUT]
-         FILE_NOT_EXISTS_TIME_STAMP_TOKEN_CHECK_FILE_NOT_FOUND = 6
-         FILE_NOT_EXISTS_TIME_STAMP_TOKEN_CHECK_FILE_NOT_FOUND_MSG = 'FILE missing(Unverify)'
+         FILE_NOT_FOUND = 6
+         FILE_NOT_FOUND_MSG = 'FILE missing(Unverify)'
         """
         provider = 'osfstorage'
         self.node_settings = self.project.get_addon(provider)
@@ -518,8 +630,8 @@ class TestTimeStampTokenVerifyCheck(ApiTestCase):
         shutil.rmtree(tmp_dir)
 
         ## check timestamp_check func response
-        nt.assert_equal(ret['verify_result'], 6)
-        nt.assert_equal(ret['verify_result_title'], 'FILE missing(Unverify)')
+        nt.assert_equal(ret['verify_result'], api_settings.FILE_NOT_FOUND)
+        nt.assert_equal(ret['verify_result_title'], api_settings.FILE_NOT_FOUND_MSG)
 
         ## check rdmfiletimestamptokenverifyresult record
         rdmfiletimestamptokenverifyresult = RdmFileTimestamptokenVerifyResult.objects.get(file_id=file_node._id)
