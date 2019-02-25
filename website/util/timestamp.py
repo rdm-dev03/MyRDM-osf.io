@@ -15,7 +15,6 @@ import traceback
 
 from urllib3.util.retry import Retry
 import requests
-import pytz
 
 from api.base import settings as api_settings
 from api.base.utils import waterbutler_api_url_for
