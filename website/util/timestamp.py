@@ -9,6 +9,7 @@ import logging
 import os
 import shutil
 import subprocess
+import tempfile
 import time
 import traceback
 
@@ -237,9 +238,7 @@ def check_file_timestamp(uid, node, data):
     result = None
 
     file_node = BaseFileNode.objects.get(_id=data['file_id'])
-    current_datetime = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
-    current_datetime_str = current_datetime.strftime('%Y%m%d%H%M%S%f')
-    tmp_dir = 'tmp_{}_{}_{}'.format(user._id, file_node._id, current_datetime_str)
+    tmp_dir = tempfile.mkdtemp()
 
     if not os.path.exists(tmp_dir):
         os.mkdir(tmp_dir)
@@ -267,7 +266,6 @@ def check_file_timestamp(uid, node, data):
 def add_token(uid, node, data):
     user = OSFUser.objects.get(id=uid)
     cookie = user.get_or_create_cookie()
-    tmp_dir = None
 
     file_node = BaseFileNode.objects.get(_id=data['file_id'])
 
@@ -286,12 +284,7 @@ def add_token(uid, node, data):
 
     try:
         # Request To Download File
-        tmp_dir = 'tmp_{}'.format(user._id)
-        count = 1
-        while os.path.exists(tmp_dir):
-            count += 1
-            tmp_dir = 'tmp_{}_{}'.format(user._id, count)
-        os.mkdir(tmp_dir)
+        tmp_dir = tempfile.mkdtemp()
         download_file_path = waterbutler.download_file(cookie, file_node, tmp_dir)
 
         if download_file_path is None:
@@ -311,7 +304,6 @@ def add_token(uid, node, data):
         result = addTimestamp.add_timestamp(
             user._id, data, node._id, download_file_path, tmp_dir
         )
-
         shutil.rmtree(tmp_dir)
         return result
 
