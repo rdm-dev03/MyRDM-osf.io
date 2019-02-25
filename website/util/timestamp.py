@@ -269,10 +269,7 @@ def add_token(uid, node, data):
     cookie = user.get_or_create_cookie()
     tmp_dir = None
 
-    file_node = BaseFileNode.resolve_class(
-        data['provider'], BaseFileNode.FILE).get_or_create(node, data['file_path'])
-    file_node.save()
-    data['file_id'] = file_node._id
+    file_node = BaseFileNode.objects.get(_id=data['file_id'])
 
     # Check access to provider
     root_file_nodes = waterbutler.get_node_info(cookie, node._id, data['provider'], '/')
@@ -327,7 +324,7 @@ def add_token(uid, node, data):
 def file_created_or_updated(node, metadata, user_id, created_flag):
     file_node = BaseFileNode.resolve_class(
         metadata['provider'], BaseFileNode.FILE
-    ).get_or_create(node, metadata.get('materialized'))
+    ).get_or_create(node, metadata.get('path'))
     file_node.save()
     created_at = metadata.get('created_utc')
     modified_at = metadata.get('modified_utc')
