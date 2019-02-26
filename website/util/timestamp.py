@@ -7,6 +7,7 @@ import datetime
 import hashlib
 import logging
 import os
+import pytz
 import shutil
 import subprocess
 import tempfile
@@ -70,8 +71,7 @@ def get_error_list(pid):
         if data.inspection_result_status in RESULT_MESSAGE:
             verify_result_title = RESULT_MESSAGE[data.inspection_result_status]
         else:  # 'FILE missing(Unverify)'
-            verify_result_title = \
-                verify_result_title = api_settings.FILE_NOT_FOUND_MSG
+            verify_result_title = api_settings.FILE_NOT_FOUND_MSG
 
         # User and date of the verification
         verify_user = OSFUser.objects.get(id=data.verify_user)
@@ -81,6 +81,9 @@ def get_error_list(pid):
         base_file_data = BaseFileNode.objects.filter(_id=data.file_id)
         base_file_data_exists = base_file_data.exists()
         file_versions = None
+        if base_file_data_exists:
+            base_file_data = base_file_data.get()
+            file_versions = base_file_data.versions.all()
 
         # Get creator info
         creator = None
@@ -130,8 +133,6 @@ def get_error_list(pid):
         }
 
         if base_file_data_exists and provider == 'osfstorage':
-            base_file_data = base_file_data.get()
-            file_versions = base_file_data.versions.all()
             error_info['file_version'] = base_file_data.current_version_number
 
         if creator is not None:
@@ -181,6 +182,12 @@ def get_full_list(uid, pid, node):
                 not_accessible_status = api_settings.TIME_STAMP_STORAGE_NOT_ACCESSIBLE
                 provider_files.update(inspection_result_status=not_accessible_status)
             continue
+        else:
+            RdmFileTimestamptokenVerifyResult.objects.filter(
+                project_id=node._id,
+                provider=provider,
+                inspection_result_status=api_settings.TIME_STAMP_STORAGE_DISCONNECTED
+            ).update(inspection_result_status=api_settings.FILE_NOT_FOUND)
 
         file_list = []
         child_file_list = []
@@ -208,7 +215,6 @@ def get_full_list(uid, pid, node):
                     'file_id': basefile_node._id,
                     'file_name': file_data['attributes'].get('name'),
                     'file_path': file_data['attributes'].get('materialized'),
-                    'file_path_origin': file_data['attributes'].get('path'),
                     'size': file_data['attributes'].get('size'),
                     'created': file_data['attributes'].get('created_utc'),
                     'modified': file_data['attributes'].get('modified_utc'),
@@ -267,6 +273,8 @@ def add_token(uid, node, data):
     cookie = user.get_or_create_cookie()
 
     file_node = BaseFileNode.objects.get(_id=data['file_id'])
+    current_datetime = datetime.datetime.now(pytz.timezone(api_settings.TIME_ZONE))
+    current_datetime_str = current_datetime.strftime('%Y%m%d%H%M%S%f')
 
     # Check access to provider
     root_file_nodes = waterbutler.get_node_info(cookie, node._id, data['provider'], '/')
@@ -313,10 +321,13 @@ def add_token(uid, node, data):
         raise
 
 def file_created_or_updated(node, metadata, user_id, created_flag):
-    file_node = BaseFileNode.resolve_class(
-        metadata['provider'], BaseFileNode.FILE
-    ).get_or_create(node, metadata.get('path'))
-    file_node.save()
+    if metadata['provider'] != 'osfstorage':
+        file_node = BaseFileNode.resolve_class(
+            metadata['provider'], BaseFileNode.FILE
+        ).get_or_create(node, metadata.get('path'))
+        file_node.save()
+    else:
+       file_node = BaseFileNode.objects.get(_id=metadata.get('path'))
     created_at = metadata.get('created_utc')
     modified_at = metadata.get('modified_utc')
     version = ''
@@ -634,7 +645,7 @@ class TimeStampTokenVerifyCheck:
         create_data.path = path
         create_data.inspection_result_status = inspection_result_status
         create_data.verify_user = userid
-        create_data.verify_date = timezone.now()
+        create_data.verify_date = timezone.now(pytz.timezone(api_settings.TIME_ZONE))
         return create_data
 
     # timestamp token check
@@ -757,7 +768,7 @@ class TimeStampTokenVerifyCheck:
             if not file_size:
                 file_size = None
 
-            verify_result.verify_date = datetime.datetime.now()
+            verify_result.verify_date = datetime.datetime.now(pytz.timezone(api_settings.TIME_ZONE))
             verify_result.verify_user = userid
             verify_result.verify_file_created_at = file_created_at
             verify_result.verify_file_modified_at = file_modified_at
