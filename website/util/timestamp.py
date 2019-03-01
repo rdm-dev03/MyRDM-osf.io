@@ -7,7 +7,6 @@ import datetime
 import hashlib
 import logging
 import os
-import pytz
 import shutil
 import subprocess
 import tempfile
@@ -273,8 +272,6 @@ def add_token(uid, node, data):
     cookie = user.get_or_create_cookie()
 
     file_node = BaseFileNode.objects.get(_id=data['file_id'])
-    current_datetime = datetime.datetime.now(pytz.timezone(api_settings.TIME_ZONE))
-    current_datetime_str = current_datetime.strftime('%Y%m%d%H%M%S%f')
 
     # Check access to provider
     root_file_nodes = waterbutler.get_node_info(cookie, node._id, data['provider'], '/')
@@ -645,7 +642,7 @@ class TimeStampTokenVerifyCheck:
         create_data.path = path
         create_data.inspection_result_status = inspection_result_status
         create_data.verify_user = userid
-        create_data.verify_date = timezone.now(pytz.timezone(api_settings.TIME_ZONE))
+        create_data.verify_date = timezone.now()
         return create_data
 
     # timestamp token check
@@ -768,7 +765,7 @@ class TimeStampTokenVerifyCheck:
             if not file_size:
                 file_size = None
 
-            verify_result.verify_date = datetime.datetime.now(pytz.timezone(api_settings.TIME_ZONE))
+            verify_result.verify_date = timezone.now()
             verify_result.verify_user = userid
             verify_result.verify_file_created_at = file_created_at
             verify_result.verify_file_modified_at = file_modified_at
