@@ -10,7 +10,6 @@ import furl
 import itsdangerous
 import jwe
 import jwt
-import logging
 import mock
 import pytest
 from django.utils import timezone
@@ -32,18 +31,18 @@ from addons.github.models import GithubFolder, GithubFile, GithubFileNode
 from addons.github.tests.factories import GitHubAccountFactory
 from addons.osfstorage.models import OsfStorageFileNode
 from addons.osfstorage.tests.factories import FileVersionFactory
-from osf.models import Session, RegistrationSchema, QuickFilesNode
-from osf.models import Session, RegistrationSchema, QuickFilesNode, NodeLog, RdmFileTimestamptokenVerifyResult, RdmUserKey
+from osf.models import NodeLog, Session, RegistrationSchema, QuickFilesNode, RdmFileTimestamptokenVerifyResult, RdmUserKey
 from osf.models import files as file_models
 from osf.models.files import BaseFileNode, TrashedFileNode, FileVersion
 from website.project import new_private_link
 from website.project.views.node import _view_project as serialize_node
 from website.project.views.node import serialize_addons, collect_node_config_js
 from website.util import api_url_for, rubeus
+from website.util.timestamp import userkey_generation
 from dateutil.parser import parse as parse_date
 from framework import sentry
-from website.util.timestamp import userkey_generation
 from tests.test_timestamp import create_test_file
+
 
 class SetEnvironMiddleware(object):
 
@@ -231,10 +230,11 @@ class TestAddonLogs(OsfTestCase):
     @mock.patch('website.util.waterbutler.get_node_info')
     @mock.patch('website.util.waterbutler.download_file')
     @mock.patch('website.notifications.events.files.FileAdded.perform')
-    @mock.patch('requests.get',{'code': 404, 'referrer': None,'message_short': 'Page not found'})
+    @mock.patch('requests.get', {'code': 404, 'referrer': None, 'message_short': 'Page not found'})
     def test_add_log_timestamptoken(self, mock_perform, mock_downloadfile, mock_nodeinfo):
         mock_downloadfile.return_value = '/testfile'
         mock_nodeinfo.return_value = {}
+
         result_list1_count = RdmFileTimestamptokenVerifyResult.objects.filter(project_id=self.node._id).count()
         nodelog_count1 = NodeLog.objects.all().count()
         path = 'pizza'
@@ -244,7 +244,7 @@ class TestAddonLogs(OsfTestCase):
         file_node._path = '/' + path
         file_node.save()
         payload = self.build_payload(metadata={
-            'provider': 'osfstorage',
+            'provider': 'github',
             'name': path,
             'materialized': '/' + path,
             'path': '/' + path,
@@ -267,9 +267,6 @@ class TestAddonLogs(OsfTestCase):
         assert_true(mock_perform.called, 'perform not called')
 
         ## tearDown
-        import os
-        from api.base import settings as api_settings
-        from osf.models import RdmUserKey
         rdmuserkey_pvt_key = RdmUserKey.objects.get(guid=self.user.id, key_kind=api_settings.PRIVATE_KEY_VALUE)
         pvt_key_path = os.path.join(api_settings.KEY_SAVE_PATH, rdmuserkey_pvt_key.key_name)
         os.remove(pvt_key_path)
@@ -280,11 +277,24 @@ class TestAddonLogs(OsfTestCase):
         os.remove(pub_key_path)
         rdmuserkey_pub_key.delete()
 
+    @mock.patch('addons.base.views.timestamp')
     @mock.patch('website.notifications.events.files.FileAdded.perform')
-    def test_add_log(self, mock_perform):
+    def test_add_log(self, mock_perform, mock_timestamp):
         path = 'pizza'
         url = self.node.api_url_for('create_waterbutler_log')
-        payload = self.build_payload(metadata={'path': path})
+        payload = self.build_payload(metadata={
+            'provider': 'osfstorage',
+            'name': 'Hello.txt',
+            'materialized': path,
+            'path': path,
+            'kind': 'file',
+            'size': 2345,
+            'created_utc': '',
+            'modified_utc': '',
+            'extra': {
+                'version': '1'
+            }
+        })
         nlogs = self.node.logs.count()
         self.app.put_json(url, payload, headers={'Content-Type': 'application/json'})
         self.node.reload()
@@ -293,12 +303,25 @@ class TestAddonLogs(OsfTestCase):
         # assert_true(mock_form_message.called, "form_message not called")
         assert_true(mock_perform.called, 'perform not called')
 
+    @mock.patch('addons.base.views.timestamp')
     @pytest.mark.enable_quickfiles_creation
-    def test_waterbutler_hook_succeeds_for_quickfiles_nodes(self):
+    def test_waterbutler_hook_succeeds_for_quickfiles_nodes(self, mock_timestamp):
         quickfiles = QuickFilesNode.objects.get_for_user(self.user)
         materialized_path = 'pizza'
         url = quickfiles.api_url_for('create_waterbutler_log')
-        payload = self.build_payload(metadata={'path': 'abc123', 'materialized': materialized_path, 'kind': 'file'}, provider='osfstorage')
+        payload = self.build_payload(metadata={
+            'provider': 'osfstorage',
+            'name': 'Hello.txt',
+            'materialized': materialized_path,
+            'path': 'abc123',
+            'kind': 'file',
+            'size': 2345,
+            'created_utc': '',
+            'modified_utc': '',
+            'extra': {
+                'version': '1'
+            }
+        }, provider='osfstorage')
         resp = self.app.put_json(url, payload, headers={'Content-Type': 'application/json'})
         assert resp.status_code == 200
 
@@ -412,7 +435,7 @@ class TestAddonLogs(OsfTestCase):
         file_node._path = '/' + filename
         file_node.save()
         self.app.put_json(wb_log_url, self.build_payload(metadata={
-            'provider': 'osfstorage',
+            'provider': 'github',
             'name': filename,
             'materialized': '/' + filename,
             'path': '/' + filename,
@@ -437,7 +460,7 @@ class TestAddonLogs(OsfTestCase):
                 'path': '/' + newfilename,
             },
             source={
-                'provider': 'osfstorage',
+                'provider': 'github',
                 'name': filename,
                 'materialized': '/' + filename,
                 'path': '/' + filename,
@@ -445,7 +468,7 @@ class TestAddonLogs(OsfTestCase):
                 'kind': 'file',
             },
             destination={
-                'provider': 'osfstorage',
+                'provider': 'github',
                 'name': newfilename,
                 'materialized': '/' + newfilename,
                 'path': '/' + newfilename,
@@ -475,7 +498,7 @@ class TestAddonLogs(OsfTestCase):
         file_node._path = '/' + filename
         file_node.save()
         self.app.put_json(wb_log_url, self.build_payload(metadata={
-            'provider': 'osfstorage',
+            'provider': 'github',
             'name': filename,
             'materialized': filepath,
             'path': filepath,
@@ -500,7 +523,7 @@ class TestAddonLogs(OsfTestCase):
                 'path': '/' + newfoldername,
             },
             source={
-                'provider': 'osfstorage',
+                'provider': 'github',
                 'name': foldername,
                 'materialized': '/' + foldername,
                 'path': '/' + foldername,
@@ -508,7 +531,7 @@ class TestAddonLogs(OsfTestCase):
                 'kind': 'folder',
             },
             destination={
-                'provider': 'osfstorage',
+                'provider': 'github',
                 'name': newfoldername,
                 'materialized': '/' + newfoldername,
                 'path': '/' + newfoldername,
@@ -536,7 +559,7 @@ class TestAddonLogs(OsfTestCase):
         file_node._path = '/' + filename
         file_node.save()
         self.app.put_json(wb_log_url, self.build_payload(metadata={
-            'provider': 'osfstorage',
+            'provider': 'github',
             'name': filename,
             'materialized': '/' + filename,
             'path': '/' + filename,
@@ -561,7 +584,7 @@ class TestAddonLogs(OsfTestCase):
                 'path': '/' + movedfilepath,
             },
             source={
-                'provider': 'osfstorage',
+                'provider': 'github',
                 'name': filename,
                 'materialized': '/' + filename,
                 'path': '/' + filename,
@@ -570,7 +593,7 @@ class TestAddonLogs(OsfTestCase):
                 'nid': self.node._id,
             },
             destination={
-                'provider': 'osfstorage',
+                'provider': 'github',
                 'name': filename,
                 'materialized': '/' + movedfilepath,
                 'path': '/' + movedfilepath,
@@ -600,7 +623,7 @@ class TestAddonLogs(OsfTestCase):
         file_node._path = '/' + folderpath + filename
         file_node.save()
         self.app.put_json(wb_log_url, self.build_payload(metadata={
-            'provider': 'osfstorage',
+            'provider': 'github',
             'name': filename,
             'materialized': '/' + folderpath + filename,
             'path': '/' + folderpath + filename,
@@ -625,7 +648,7 @@ class TestAddonLogs(OsfTestCase):
                 'path': '/' + movedfolderpath,
             },
             source={
-                'provider': 'osfstorage',
+                'provider': 'github',
                 'name': foldername,
                 'materialized': '/' + folderpath,
                 'path': '/' + folderpath,
@@ -634,7 +657,7 @@ class TestAddonLogs(OsfTestCase):
                 'nid': self.node._id,
             },
             destination={
-                'provider': 'osfstorage',
+                'provider': 'github',
                 'name': foldername,
                 'materialized': '/' + movedfolderpath,
                 'path': '/' + movedfolderpath,
@@ -662,7 +685,7 @@ class TestAddonLogs(OsfTestCase):
         file_node._path = '/' + filename
         file_node.save()
         self.app.put_json(wb_log_url, self.build_payload(metadata={
-            'provider': 'osfstorage',
+            'provider': 'github',
             'name': filename,
             'materialized': '/' + filename,
             'path': '/' + filename,
@@ -683,7 +706,7 @@ class TestAddonLogs(OsfTestCase):
         self.app.put_json(wb_log_url, self.build_payload(
             action='delete',
             metadata={
-                'provider': 'osfstorage',
+                'provider': 'github',
                 'name': filename,
                 'materialized': '/' + filename,
                 'path': '/' + filename,
@@ -715,7 +738,7 @@ class TestAddonLogs(OsfTestCase):
         file_node._path = '/' + folderpath + filename
         file_node.save()
         self.app.put_json(wb_log_url, self.build_payload(metadata={
-            'provider': 'osfstorage',
+            'provider': 'github',
             'name': filename,
             'materialized': '/' + folderpath + filename,
             'path': '/' + folderpath + filename,
@@ -737,7 +760,7 @@ class TestAddonLogs(OsfTestCase):
         self.app.put_json(wb_log_url, self.build_payload(
             action='delete',
             metadata={
-                'provider': 'osfstorage',
+                'provider': 'github',
                 'name': foldername,
                 'materialized': '/' + folderpath,
                 'path': '/' + folderpath,
@@ -816,17 +839,6 @@ class TestAddonLogs(OsfTestCase):
         self.node.reload()
         assert_equal(self.node.logs.count(), nlogs)
 
-    def test_add_file_osfstorage_log(self):
-        self.configure_osf_addon()
-        path = 'pizza'
-        url = self.node.api_url_for('create_waterbutler_log')
-        payload = self.build_payload(metadata={'materialized': path, 'kind': 'file', 'path': path})
-        nlogs = self.node.logs.count()
-        self.app.put_json(url, payload, headers={'Content-Type': 'application/json'})
-        self.node.reload()
-        assert_equal(self.node.logs.count(), nlogs + 1)
-        assert('urls' in self.node.logs.filter(action='osf_storage_file_added')[0].params)
-
     @mock.patch('addons.base.views.timestamp')
     def test_add_file_osfstorage_log(self, mock_timestamp):
         self.configure_osf_addon()
@@ -845,6 +857,17 @@ class TestAddonLogs(OsfTestCase):
                 'version': '1'
             }
         })
+        nlogs = self.node.logs.count()
+        self.app.put_json(url, payload, headers={'Content-Type': 'application/json'})
+        self.node.reload()
+        assert_equal(self.node.logs.count(), nlogs + 1)
+        assert('urls' in self.node.logs.filter(action='osf_storage_file_added')[0].params)
+
+    def test_add_folder_osfstorage_log(self):
+        self.configure_osf_addon()
+        path = 'pizza'
+        url = self.node.api_url_for('create_waterbutler_log')
+        payload = self.build_payload(metadata={'materialized': path, 'kind': 'folder', 'path': path})
         nlogs = self.node.logs.count()
         self.app.put_json(url, payload, headers={'Content-Type': 'application/json'})
         self.node.reload()
