@@ -327,7 +327,7 @@ def file_created_or_updated(node, metadata, user_id, created_flag):
         ).get_or_create(node, metadata.get('path'))
         file_node.save()
     else:
-       file_node = BaseFileNode.objects.get(_id=metadata.get('path'))
+        file_node = BaseFileNode.objects.get(_id=metadata.get('path'))
     created_at = metadata.get('created_utc')
     modified_at = metadata.get('modified_utc')
     version = ''
