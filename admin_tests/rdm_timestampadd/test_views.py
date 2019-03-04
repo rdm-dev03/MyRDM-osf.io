@@ -258,7 +258,7 @@ class TestAddTimestampData(AdminTestCase):
         nt.assert_is_instance(res_timestampaddlist, dict)
 
         ## check TimestampError(TimestampVerifyResult.inspection_result_statu != 1) in response
-        nt.assert_in('osfstorage_test_file1.status_1', str(res_timestampaddlist))
+        nt.assert_not_in('osfstorage_test_file1.status_1', str(res_timestampaddlist))
         nt.assert_in('osfstorage_test_file2.status_3', str(res_timestampaddlist))
         nt.assert_in('osfstorage_test_file3.status_3', str(res_timestampaddlist))
         nt.assert_in('s3_test_file1.status_3', str(res_timestampaddlist))
