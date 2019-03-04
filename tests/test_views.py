@@ -5409,7 +5409,7 @@ def create_rdmfiletimestamptokenverifyresult(self, filename='test_file_timestamp
     from api.timestamp.timestamptoken_verify import TimeStampTokenVerifyCheck
     import shutil
     ## create file_node(BaseFileNode record)
-    file_node = create_test_file(node=self.node, user=self.user, filename=filename)
+    file_node = create_test_file(target=self.node, user=self.user, filename=filename)
     file_node.save()
     ## create tmp_dir
     current_datetime = dt.datetime.now(pytz.timezone('Asia/Tokyo'))
