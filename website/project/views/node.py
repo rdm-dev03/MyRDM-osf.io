@@ -741,13 +741,15 @@ def _view_project(node, auth, primary=False,
         user.save()
 
     parent = node.find_readable_antecedent(auth)
+
+    in_bookmark_collection = False
+    bookmark_collection_id = ''
+
     if user:
         bookmark_collection = find_bookmark_collection(user)
-        bookmark_collection_id = bookmark_collection._id
-        in_bookmark_collection = bookmark_collection.guid_links.filter(_id=node._id).exists()
-    else:
-        in_bookmark_collection = False
-        bookmark_collection_id = ''
+        if bookmark_collection:
+            bookmark_collection_id = bookmark_collection._id
+            in_bookmark_collection = bookmark_collection.guid_links.filter(_id=node._id).exists()
 
     view_only_link = auth.private_key or request.args.get('view_only', '').strip('/')
     anonymous = has_anonymous_link(node, auth)
