@@ -41,12 +41,6 @@ RESULT_MESSAGE = {
         api_settings.TIME_STAMP_TOKEN_CHECK_FILE_NOT_FOUND_MSG,  # 'TST missing(Unverify)'
     api_settings.FILE_NOT_EXISTS:
         api_settings.FILE_NOT_EXISTS_MSG,  # 'FILE missing'
-    api_settings.TIME_STAMP_VERIFICATION_ERR:
-        api_settings.TIME_STAMP_VERIFICATION_ERR_MSG,
-    api_settings.TIME_STAMP_STORAGE_DISCONNECTED:
-        api_settings.TIME_STAMP_STORAGE_DISCONNECTED_MSG,
-    api_settings.TIME_STAMP_STORAGE_NOT_ACCESSIBLE:
-        api_settings.TIME_STAMP_STORAGE_NOT_ACCESSIBLE_MSG
 }
 
 def get_error_list(pid):
@@ -179,16 +173,12 @@ def get_full_list(uid, pid, node):
                 provider=provider
             )
             files_status = provider_files.first().inspection_result_status
-            if files_status != api_settings.TIME_STAMP_STORAGE_DISCONNECTED:
-                not_accessible_status = api_settings.TIME_STAMP_STORAGE_NOT_ACCESSIBLE
-                provider_files.update(inspection_result_status=not_accessible_status)
-            continue
         else:
             RdmFileTimestamptokenVerifyResult.objects.filter(
                 project_id=node._id,
                 provider=provider,
-                inspection_result_status=api_settings.TIME_STAMP_STORAGE_DISCONNECTED
-            ).update(inspection_result_status=api_settings.FILE_NOT_FOUND)
+                inspection_result_status=api_settings.FILE_NOT_EXISTS
+            ).update(inspection_result_status=api_settings.FILE_NOT_EXISTS)
 
         file_list = []
         child_file_list = []
@@ -292,7 +282,6 @@ def add_token(uid, node, data):
     try:
         # Request To Download File
         tmp_dir = tempfile.mkdtemp()
-        os.mkdir(tmp_dir)
         download_file_path = waterbutler.download_file(cookie, file_node, tmp_dir)
 
         if download_file_path is None:
