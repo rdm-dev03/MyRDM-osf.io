@@ -182,9 +182,6 @@ class TestTimeStampTokenVerifyCheck(ApiTestCase):
         os.remove(pub_key_path)
         rdmuserkey_pub_key.delete()
 
-    @mock.patch('requests.get')
-    @mock.patch('website.util.waterbutler.requests', side_effect=Exception('Test'))
-
     def test_timestamp_check_return_status_1(self):
         """
         TIME_STAMP_TOKEN_CHECK_SUCCESS = 1
