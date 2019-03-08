@@ -242,7 +242,6 @@ def check_file_timestamp(uid, node, data):
     if download_file_path is None:
         intentional_remove_status = [
             api_settings.FILE_NOT_EXISTS,
-            api_settings.TIME_STAMP_STORAGE_DISCONNECTED
         ]
         file_data = RdmFileTimestamptokenVerifyResult.objects.filter(file_id=data['file_id'])
         if file_data.exists() and \
@@ -272,10 +271,6 @@ def add_token(uid, node, data):
             project_id=node._id,
             provider=data['provider']
         )
-        files_status = provider_files.first().inspection_result_status
-        if files_status != api_settings.TIME_STAMP_STORAGE_DISCONNECTED:
-            not_accessible_status = api_settings.TIME_STAMP_STORAGE_NOT_ACCESSIBLE
-            provider_files.update(inspection_result_status=not_accessible_status)
         return None
 
     try:
@@ -286,7 +281,6 @@ def add_token(uid, node, data):
         if download_file_path is None:
             intentional_remove_status = [
                 api_settings.FILE_NOT_EXISTS,
-                api_settings.TIME_STAMP_STORAGE_DISCONNECTED
             ]
             file_data = RdmFileTimestamptokenVerifyResult.objects.filter(file_id=data['file_id'])
             if file_data.exists() and \
