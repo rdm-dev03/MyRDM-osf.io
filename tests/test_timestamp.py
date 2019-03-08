@@ -11,7 +11,7 @@ from osf.models import RdmUserKey, RdmFileTimestamptokenVerifyResult, Guid
 from osf_tests.factories import ProjectFactory, AuthUserFactory
 from tests.base import ApiTestCase, OsfTestCase
 from website.util import timestamp
-import tempflile
+import tempfile
 from website.util.timestamp import (
     AddTimestamp, TimeStampTokenVerifyCheck,
     userkey_generation, userkey_generation_check
