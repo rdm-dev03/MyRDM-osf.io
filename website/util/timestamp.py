@@ -267,10 +267,6 @@ def add_token(uid, node, data):
     # Check access to provider
     root_file_nodes = waterbutler.get_node_info(cookie, node._id, data['provider'], '/')
     if root_file_nodes is None:
-        provider_files = RdmFileTimestamptokenVerifyResult.objects.filter(
-            project_id=node._id,
-            provider=data['provider']
-        )
         return None
 
     try:
