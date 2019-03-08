@@ -172,7 +172,6 @@ def get_full_list(uid, pid, node):
                 project_id=node._id,
                 provider=provider
             )
-            files_status = provider_files.first().inspection_result_status
         else:
             RdmFileTimestamptokenVerifyResult.objects.filter(
                 project_id=node._id,
