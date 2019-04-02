@@ -464,6 +464,8 @@ class TestGatherView(AdminTestCase):
         self.request.user.is_registered = True
         self.request.user.is_superuser = True
         result = views.create_pdf(self.request, True, **self.view.kwargs)
+        import logging
+        logging.info(result)
         nt.assert_true(result.status_code, 200)
         nt.assert_true('.pdf' in result['Content-Disposition'].lower())
 
