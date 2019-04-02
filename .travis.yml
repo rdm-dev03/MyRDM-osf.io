@@ -18,6 +18,15 @@ cache:
     - $HOME/.cache
     - node_modules
     - website/static/vendor/bower_components
+addons:
+  apt:
+    packages:
+    - libtk8.6
+    - wkhtmltopdf
+    - xvfb
+    - cron
+    - curl
+    - jq
 
 env:
   global:
@@ -95,8 +104,6 @@ before_install:
       done
 
 install:
-    - sudo apt-get update || true
-    - sudo apt-get install -y libtk8.6  wkhtmltopdf  xvfb  cron  curl  jq
     - cd $TRAVIS_BUILD_DIR
     - cp website/settings/local-travis.py website/settings/local.py
     - cp api/base/settings/local-travis.py api/base/settings/local.py
