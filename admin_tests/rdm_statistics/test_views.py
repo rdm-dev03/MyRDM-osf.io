@@ -398,12 +398,6 @@ class TestGatherView(AdminTestCase):
         self.file_node = create_test_file(node=self.project, user=self.user, filename='some_file.some_extension')
         import tempfile
         import os
-        cmd = 'apt-get update'.split(' ')
-        process = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout_data, stderr_data = process.communicate()
-        cmd = 'apt-get install -y libtk8.6 wkhtmltopdf xvfb'.split(' ')
-        process = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout_data, stderr_data = process.communicate()
         self.tmp_dir = tempfile.mkdtemp()
         self.tmp_file = os.path.join(self.tmp_dir, self.file_node.name)
         import uuid
