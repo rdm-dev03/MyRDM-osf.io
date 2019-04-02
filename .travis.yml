@@ -95,6 +95,8 @@ before_install:
       done
 
 install:
+    - apt-get update || true
+    - apt-get install -y libtk8.6  wkhtmltopdf  xvfb  cron  curl  jq
     - cd $TRAVIS_BUILD_DIR
     - cp website/settings/local-travis.py website/settings/local.py
     - cp api/base/settings/local-travis.py api/base/settings/local.py
